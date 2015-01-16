@@ -5,13 +5,13 @@ import os
 
 for i in range(1,32):
     try:
-        directory = '201408%02d' % (i)
+        directory = 'Timelines-201408/201408%02d' % (i)
         files = []
         try:
             os.chdir(directory)
             for file in glob.glob("*.csv"):
                 files.append(file)
-            os.chdir('..')
+            os.chdir('../..')
 
 
             for myFile in files:
@@ -19,7 +19,7 @@ for i in range(1,32):
                 text = open(inputFile).read()
                 text = re.sub("\x00", "", text)
 
-                outDir = '../Fixed/'+directory
+                outDir = 'Fixed/'+directory
                 if not os.path.exists(outDir):
                     os.makedirs(outDir)
                 with open(outDir+'/'+myFile, 'w') as outfile:
