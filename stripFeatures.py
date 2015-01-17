@@ -1,5 +1,5 @@
 import json
-import os, glob
+import os, glob, sys
 import pprint as pp
 
 from functions import *
@@ -29,6 +29,10 @@ def run():
                     f.write(json.dumps(messageList, indent=None))
 
         except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            print(exc_type)
+            print inputFile
+            print(exc_tb.tb_lineno)
             print str(e)+"!"
 
 def removeFeatures(message):
@@ -44,6 +48,7 @@ def removeFeatures(message):
                                  "possibly_sensitive",
                                  "filter_level",
                                  "in_reply_to_status_id_str",
+                                 "extended_entities",
                                  "place"]
     removeUserFeaturesList = ["profile_background_color",
                               "profile_background_image_url_https",
@@ -68,13 +73,14 @@ def removeFeatures(message):
                               "contributors_enabled",
                               "time_zone",
                               "protected",
-                              "is_translator"]
+                              "is_translator"]                        
     for feature in removeMessageFeaturesList:
         if feature in message:
             message.pop(feature, None)
-    for feature in removeUserFeaturesList:
-        if feature in message['user']:
-            message['user'].pop(feature, None)
+    if 'user' in message:         
+        for feature in removeUserFeaturesList:
+            if feature in message['user']:
+                message['user'].pop(feature, None)       
     if "retweeted_status" in message:
         message["retweeted_status"] = removeFeatures(message["retweeted_status"])
 
