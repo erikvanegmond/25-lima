@@ -2,16 +2,18 @@ import json
 import os, glob
 import pprint as pp
 
+from functions import *
+
+
+
 def run():
-    for i in range(1,32):
+    #assuming every folder has the same files in it to save time looking for files.
+    directory = 'Fixed/Timelines-201408/20140801'
+    files = getFiles(directory)
+
+    for i in range(1,2):
         try:
             directory = 'Fixed/Timelines-201408/201408%02d' % (i)
-            files = []
-            os.chdir(directory)
-            for file in glob.glob("*.csv"):
-                files.append(file)
-            os.chdir('../../..')
-
             for myFile in files:
                 inputFile = directory+'/'+myFile
                 text = open(inputFile).read()
@@ -77,5 +79,6 @@ def removeFeatures(message):
         message["retweeted_status"] = removeFeatures(message["retweeted_status"])
 
     return message
+
 
 run()
