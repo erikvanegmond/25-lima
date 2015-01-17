@@ -73,14 +73,14 @@ def removeFeatures(message):
                               "contributors_enabled",
                               "time_zone",
                               "protected",
-                              "is_translator"]                        
+                              "is_translator"]
     for feature in removeMessageFeaturesList:
         if feature in message:
             message.pop(feature, None)
-    if 'user' in message:         
+    if 'user' in message:
         for feature in removeUserFeaturesList:
             if feature in message['user']:
-                message['user'].pop(feature, None)       
+                message['user'].pop(feature, None)
     if "retweeted_status" in message:
         message["retweeted_status"] = removeFeatures(message["retweeted_status"])
 
