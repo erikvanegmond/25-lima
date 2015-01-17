@@ -1,5 +1,5 @@
 import json
-import os, glob
+import os, glob, sys
 import pprint as pp
 
 def run():
@@ -27,6 +27,10 @@ def run():
                     f.write(json.dumps(messageList, indent=None))
 
         except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            print(exc_type)
+            print inputFile
+            print(exc_tb.tb_lineno)
             print str(e)+"!"
 
 def removeFeatures(message):
@@ -71,9 +75,10 @@ def removeFeatures(message):
     for feature in removeMessageFeaturesList:
         if feature in message:
             message.pop(feature, None)
-    for feature in removeUserFeaturesList:
-        if feature in message['user']:
-            message['user'].pop(feature, None)       
+    if 'user' in message:         
+        for feature in removeUserFeaturesList:
+            if feature in message['user']:
+                message['user'].pop(feature, None)       
     if "retweeted_status" in message:
         message["retweeted_status"] = removeFeatures(message["retweeted_status"])
 
