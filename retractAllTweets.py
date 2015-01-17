@@ -1,6 +1,8 @@
 import json
 import os, glob
 
+from functions import *
+
 os.getcwd()
 
 removeMessageFeaturesList = ["in_reply_to_status_id","id","favorite_count","coordinates","entities","retweet_count","in_reply_to_user_id","user","lang","timestamp_ms","retweeted_status","extended_entities"]
