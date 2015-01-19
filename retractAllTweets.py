@@ -1,5 +1,5 @@
 import json
-import os, glob
+import os, glob, sys
 
 from functions import *
 
@@ -22,10 +22,12 @@ for i in range(1,31):
             inputFile = directory+'/'+myFile
             text = open(inputFile).read()
             messageList = json.loads(text)
-            for message in messageList:
+            for j, message in enumerate(messageList):
                 for feature in removeMessageFeaturesList:
-                    message.pop(feature, None)
-
+                    message.pop(feature, None)  
+                if len(message) > 2: 
+                    messageList.pop(j)
+                    
             if i == 1:
                 f = open(outDir+'/'+myFile, 'a')
                 f.write("[ ")
@@ -40,4 +42,8 @@ for i in range(1,31):
                     f.write(" ]")
 
     except Exception as e:
-        print e
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            print(exc_type)
+            print inputFile
+            print(exc_tb.tb_lineno)
+            print str(e)+"!"
