@@ -1,6 +1,8 @@
 import os, glob
 import re
 
+from logger import *
+
 def getFiles(directory = ".", fileFilter="*"):
     """ Get the files from a folder.
 
