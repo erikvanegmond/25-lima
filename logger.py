@@ -1,6 +1,6 @@
 import logging
 
-logging.basicConfig(level=logging.WARN, format='%(levelname)s [%(asctime)s] [%(filename)s:%(lineno)s] %(message)s', filename='logging.log',  filemode='w')
+logging.basicConfig(level=logging.INFO, format='%(levelname)s [%(asctime)s] [%(filename)s:%(lineno)s] %(message)s', filename='logging.log',  filemode='w')
 console = logging.StreamHandler()
 console.setLevel(logging.INFO)
 formatter = logging.Formatter('%(levelname)s [%(asctime)s] [%(filename)s:%(lineno)s] %(message)s')
