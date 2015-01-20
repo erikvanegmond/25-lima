@@ -3,15 +3,13 @@ import os, glob
 
 from functions import *
 
-os.getcwd()
-
 removeMessageFeaturesList = ["in_reply_to_status_id","id","favorite_count","coordinates","entities","retweet_count","in_reply_to_user_id", "text", "created_at","lang","timestamp_ms","retweeted_status","extended_entities"]
 
 #assuming every folder has the same files in it to save time looking for files.
 directory = 'Fixed/Timelines-201408/20140801'
 files = getFiles(directory)
 
-for i in range(1,31):
+for i in range(1,32):
     try:
         directory = 'strippedFeatures/Fixed/Timelines-201408/201408%02d' % (i)
         outDir = 'onlyUsers/'
