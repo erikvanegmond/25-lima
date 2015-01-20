@@ -26,16 +26,16 @@ def run():
 
                 if i == 1:
                     f = open(outDir+'/'+myFile, 'a')
-                    f.write("[ ")
+                    f.write("[  ")
                 if messageList:
                     f = open(outDir+'/'+myFile, 'a')
                     f.write(json.dumps(messageList, indent=1)[1:-1])
-                    if i!=number_of_days:
-                        f = open(outDir+'/'+myFile, 'a')
-                        f.write(", ")
-                    else:
-                        f = open(outDir+'/'+myFile, 'a')
-                        f.write(" ]")       
+                    f.write(", ")
+                if i is number_of_days:    
+                    f = open(outDir+'/'+myFile, 'a')
+                    f.seek(-2, os.SEEK_END)
+                    f.truncate()
+                    f.write(" ]")       
 
         except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
