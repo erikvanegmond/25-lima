@@ -6,15 +6,18 @@ import os
 for i in range(1,2):
     try:
         directory = 'HttpCheck/August 2014/201408%02d' % (i)
+        print "+++++++++++++++++++++++++++\n2014 - 08 - %02d" %(i)
         files = []
         try:
             os.chdir(directory)
             for file in glob.glob("*.json"):
-                files.append(file)
+                if "HttpCheck" in file:
+                    files.append(file)
             os.chdir('../../..')
 
-
+     
             for myFile in files:
+                downs = 0
                 inputFile = directory+'/'+myFile
                 lines = open(inputFile).read().split('\n')
                 for line in lines:
@@ -22,10 +25,10 @@ for i in range(1,2):
                         try:
                             data = json.loads(line.strip(','))
                             if data["IsDown"]==True:
-                                print data["ServiceEndpointUrl"]
-                                break
+                                downs += 1
                         except Exception as e:
                             continue
+                print "%s was down %d times" % (data["ServiceEndpointUrl"], downs)
 
         except Exception as e:
             print e

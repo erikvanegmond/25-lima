@@ -25,7 +25,7 @@ userFeaturesList = ["id",
                    "screen_name",
                    "url",
                    "created_at",
-                   "default_profile"                   
+                   "default_profile"
                    ]
 
 
@@ -34,21 +34,21 @@ directory = 'Fixed/Timelines-201408/20140801'
 files = getFiles(directory)
 users = [] #Init user list
 
-for i in range(1,31): #For loop iterating through 31 days
-    try: #exit upon failure to prevent 
+for i in range(1,32): #For loop iterating through 31 days
+    try: #exit upon failure to prevent
         directory = 'Fixed/Timelines-201408/201408%02d' % (i)
         print ("iteration")
         outDir = 'userList/'#folder for output
         if not os.path.exists(outDir):  #if the folder doesn't exist
             os.makedirs(outDir)         #create it
 
-        for myFile in files: 
+        for myFile in files:
             inputFile = directory+'/'+myFile
             text = open(inputFile).read()
             messageList = json.loads(text)
             for message in messageList:
                 for feature not in userFeaturesList:
-                    message.pop(feature, None) 
+                    message.pop(feature, None)
 
             with open(outDir+'/'+myFile, 'w') as f:
                 f.write(json.dumps(messageList, indent=None))
