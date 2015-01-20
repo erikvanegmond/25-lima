@@ -18,7 +18,10 @@ for i in range(1,31):
         if not os.path.exists(outDir):
             os.makedirs(outDir)
 
+        counter = 0
+            
         for myFile in files:
+            
             inputFile = directory+'/'+myFile
             text = open(inputFile).read()
             messageList = json.loads(text)
@@ -26,8 +29,11 @@ for i in range(1,31):
                 for feature in removeMessageFeaturesList:
                     message.pop(feature, None)  
                 if len(message) > 2: 
+                    print message
+                    print len(message)
+                    counter += 1
                     messageList.pop(j)
-                    
+    
             if i == 1:
                 f = open(outDir+'/'+myFile, 'a')
                 f.write("[ ")
@@ -40,6 +46,7 @@ for i in range(1,31):
                 else:
                     f = open(outDir+'/'+myFile, 'a')
                     f.write(" ]")
+        print counter        
 
     except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
