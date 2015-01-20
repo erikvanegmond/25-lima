@@ -1,6 +1,8 @@
 import os, glob
 import re
 
+from logger import *
+
 def getFiles(directory = ".", fileFilter="*"):
     """ Get the files from a folder.
 
@@ -23,3 +25,10 @@ def getFiles(directory = ".", fileFilter="*"):
         os.chdir(goBack)
     return files
 
+def getSitesFromFiles(fileList):
+    siteList = []
+    for file in fileList:
+        site = re.sub(r'(.csv)|(.json)|(HttpCheck-)|(TwitterNerStatus-)', '', file)
+        if site not in siteList:
+            siteList.append(site)
+    return siteList
