@@ -11,7 +11,11 @@ def run():
     directory = 'Fixed/Timelines-201408/20140801'
     files = getFiles(directory)
 
+<<<<<<< HEAD
     for i in range(1,32):
+=======
+    for i in range(1,31):
+>>>>>>> 6e8a92da77c3f7486de9b4cd75d744150eeeb8e1
         try:
             directory = 'Fixed/Timelines-201408/201408%02d' % (i)
             for myFile in files:
