@@ -1,19 +1,19 @@
-import numpy as np
-import pdb
-import pandas as pd
 import json
 import sys
 
 from functions import *
 
+
+
 #assuming every folder has the same files in it to save time looking for files.
 directory = 'Fixed/Timelines-201408/20140801'
 siteList = getSitesFromFiles(getFiles(directory))
-siteList = ['3fm.nl']
+# siteList = ['telegraaf.nl']
 tweetFileTemplate = 'strippedFeatures/Fixed/Timelines-201408/201408%02d/%s.csv'
 httpCheckFileTemplate = "HttpCheck/August 2014/201408%02d/HttpCheck-%s.json"
 
 downtimeTweets = []
+uptimeTweets = []
 
 for site in siteList:
     logging.info(site)
@@ -30,21 +30,35 @@ for site in siteList:
             continue
 
         try:
-            if len(tweetData):
+            if len(tweetData) and len(downtimeData):
                 downtimeData['timestamp'] = pd.to_datetime(downtimeData['timestamp'], dayfirst=True)
                 tweetData['created_at'] = pd.to_datetime(tweetData['created_at'], dayfirst=True)
                 tweetData.index = pd.to_datetime(tweetData.pop('created_at'))
-
                 downtimes = downtimeData[downtimeData["IsDown"].isin([True])]['timestamp']
-                for downtime in downtimes:
-                    downtimeMoment = downtime
-                    preDowntimeMoment = downtimeMoment - np.timedelta64(10, 'm')
-                    postDowntimeMoment = downtimeMoment + np.timedelta64(20, 'm')
-                    currentDowntimeTweets = tweetData[preDowntimeMoment:postDowntimeMoment].text.values
+
+                downtimeRanges = getDowntimeRanges(downtimes, downtimeData)
+                uptimeRanges = getUptimeRanges(downtimeRanges, downtimeData)
+
+                for downtimeRange in downtimeRanges:
+                    currentDowntimeTweets = tweetData[downtimeRange[0]:downtimeRange[1]].text.values
                     for tweet in currentDowntimeTweets:
                         tweet = tweet.encode('ascii', 'ignore')
                         if tweet not in downtimeTweets:
                             downtimeTweets.append(tweet)
+
+                for uptimeRange in uptimeRanges:
+                    currentDowntimeTweets = tweetData[uptimeRange[0]:uptimeRange[1]].text.values
+                    for tweet in currentDowntimeTweets:
+                        tweet = tweet.encode('ascii', 'ignore')
+                        if tweet not in uptimeTweets:
+                            if tweet in downtimeTweets:
+                                logging.error("Dit hoort niet")
+                            uptimeTweets.append(tweet)
+
+        except IndexError as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            logging.error("IndexError on line %d,  %s" % (exc_tb.tb_lineno,e))
+
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             logging.error("Something went wrong at %d: %s, %s. Problematic files: %s or %s" % (exc_tb.tb_lineno,exc_type, e, downtimeFile, tweetFile))
@@ -52,5 +66,8 @@ for site in siteList:
 
 with open("downtimeTweets.json", 'w') as f:
     f.write(json.dumps(downtimeTweets, indent=1))
+
+with open("uptimeTweets.json", 'w') as f:
+    f.write(json.dumps(uptimeTweets, indent=1))
 
 
