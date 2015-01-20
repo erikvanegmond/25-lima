@@ -25,9 +25,12 @@ def run():
                         position+=1
                 
         countDict = Counter(ngrams)
+        totalNr = len(ngrams)
 
-        for k in countDict.most_common(5):
-            print k[0] + ": " + str(k[1])
+        print "aantal ngrams: " + str(totalNr)
+        print "WOORD - FREQ - REL FREQ"
+        for k in countDict.most_common(5): 
+            print k[0] + " - " + str(k[1]) + " - " + str(k[1]/float(totalNr))
 
     except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
