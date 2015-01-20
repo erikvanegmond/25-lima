@@ -50,9 +50,8 @@ def extractFeatures(message):
     for feature in message.keys():
         if feature not in relevantFeaturesList:
             message.pop(feature, None)
-        if feature is "text":
-            message["text"] = message["text"].encode('ascii', 'ignore')
-    
+        if feature == "text":
+            message["text"] = message["text"].encode('ascii', 'ignore')   
 
     return message
 
