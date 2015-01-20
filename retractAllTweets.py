@@ -25,7 +25,6 @@ for i in range(1,32):
             messageList = json.loads(text)
             for j, message in enumerate(messageList):
                 for feature in removeMessageFeaturesList:
-<<<<<<< HEAD
                     message.pop(feature, None)  
                 if len(message) > 2: 
                     print message
@@ -33,12 +32,10 @@ for i in range(1,32):
                     counter += 1
                     messageList.pop(j)
     
-=======
                     message.pop(feature, None)
                 if len(message) > 2:
                     messageList.pop(j)
 
->>>>>>> 8bcbbd94fd6580af001809365383cea9ae2ee274
             if i == 1:
                 f = open(outDir+'/'+myFile, 'a')
                 f.write("[ ")
