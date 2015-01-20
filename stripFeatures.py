@@ -11,7 +11,7 @@ def run():
     directory = 'Fixed/Timelines-201408/20140801'
     files = getFiles(directory)
 
-    for i in range(1,2):
+    for i in range(1,32):
         try:
             directory = 'Fixed/Timelines-201408/201408%02d' % (i)
             for myFile in files:
