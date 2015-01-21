@@ -71,6 +71,9 @@ def getUptimeRanges(downtimeRanges, downtimeData):
 
     return uptimeRanges
 
+def tweetDataToMessageList(tweetData):
+    messageList = [{'created_at':str(index), 'text':row['text'].encode('ascii', 'ignore')} for index, row in tweetData.iterrows()]
+    return messageList
 
 def getNgramsFromString(n, string):
     '''
@@ -111,3 +114,5 @@ def getNgramsFromMessageList(n, messageList):
             ngrams += getNgramsFromString(n, message["text"])
 
     return ngrams
+
+

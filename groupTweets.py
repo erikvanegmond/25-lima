@@ -8,7 +8,7 @@ from functions import *
 #assuming every folder has the same files in it to save time looking for files.
 directory = 'Fixed/Timelines-201408/20140801'
 siteList = getSitesFromFiles(getFiles(directory))
-# siteList = ['telegraaf.nl']
+siteList = ['telegraaf.nl']
 tweetFileTemplate = 'strippedFeatures/Fixed/Timelines-201408/201408%02d/%s.csv'
 httpCheckFileTemplate = "HttpCheck/August 2014/201408%02d/HttpCheck-%s.json"
 
@@ -40,20 +40,16 @@ for site in siteList:
                 uptimeRanges = getUptimeRanges(downtimeRanges, downtimeData)
 
                 for downtimeRange in downtimeRanges:
-                    currentDowntimeTweets = tweetData[downtimeRange[0]:downtimeRange[1]].text.values
-                    for tweet in currentDowntimeTweets:
-                        tweet = tweet.encode('ascii', 'ignore')
-                        if tweet not in downtimeTweets:
-                            downtimeTweets.append(tweet)
+                    messageList = tweetDataToMessageList(tweetData[downtimeRange[0]:downtimeRange[1]])
+                    for message in messageList:
+                        if message not in uptimeTweets:
+                            downtimeTweets.append(message)
 
                 for uptimeRange in uptimeRanges:
-                    currentDowntimeTweets = tweetData[uptimeRange[0]:uptimeRange[1]].text.values
-                    for tweet in currentDowntimeTweets:
-                        tweet = tweet.encode('ascii', 'ignore')
-                        if tweet not in uptimeTweets:
-                            if tweet in downtimeTweets:
-                                logging.error("Dit hoort niet")
-                            uptimeTweets.append(tweet)
+                    messageList = tweetDataToMessageList(tweetData[uptimeRange[0]:uptimeRange[1]])
+                    for message in messageList:
+                        if message not in uptimeTweets:
+                            uptimeTweets.append(message)
 
         except IndexError as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
