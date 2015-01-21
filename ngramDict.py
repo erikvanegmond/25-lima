@@ -22,14 +22,14 @@ def run():
                     position = 0    
                     for i in range(0,len(wordArray)-n+1):
                         ngrams.append(" ".join(wordArray[position:position+n]))
-                        position+=1
+                        position+=1  
                 
         countDict = Counter(ngrams)
-        totalNr = len(ngrams)
+        totalNr = len(totalNr)
 
-        print "aantal ngrams: " + str(totalNr)
+        print "aantal ngrams: " + str(totalNr) #dit is voor unigrams
         print "WOORD - FREQ - REL FREQ"
-        for k in countDict.most_common(5): 
+        for k in countDict.most_common(200): 
             print k[0] + " - " + str(k[1]) + " - " + str(k[1]/float(totalNr))
 
     except Exception as e:
