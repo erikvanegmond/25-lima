@@ -3,27 +3,22 @@ from collections import Counter
 
 from functions import *
 
+
 def run():
     #assuming every folder has the same files in it to save time looking for files.
     directory = 'onlyText/'
     files = getFiles(directory)
-    
+
     n = 1 #unigrams
     ngrams = []
-    
-    try:         
+
+    try:
         for myFile in files:
             inputFile = directory+'/'+myFile
             text = open(inputFile).read()
             messageList = json.loads(text)
-            for message in messageList:
-                if message:
-                    wordArray = message["text"].split()
-                    position = 0    
-                    for i in range(0,len(wordArray)-n+1):
-                        ngrams.append(" ".join(wordArray[position:position+n]))
-                        position+=1  
-                
+            ngrams += getNgramsFromMessageList(n, messageList)
+
         countDict = Counter(ngrams)
         totalNr = len(ngrams)
 
@@ -39,4 +34,4 @@ def run():
             print(exc_tb.tb_lineno)
             print str(e)+"!"
 
-run()                
+run()
