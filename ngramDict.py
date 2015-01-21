@@ -5,7 +5,6 @@ from functions import *
 
 
 def run():
-    logging.debug("Start")
     #assuming every folder has the same files in it to save time looking for files.
     directory = 'onlyText/'
     files = getFiles(directory)
@@ -19,16 +18,13 @@ def run():
             text = open(inputFile).read()
             messageList = json.loads(text)
             ngrams += getNgramsFromMessageList(n, messageList)
-            # for message in messageList:
-            #     if message:
-            #         ngrams += getNgrams(n, message["text"])
 
         countDict = Counter(ngrams)
-        totalNr = len(ngrams)
+        totalNr = len(totalNr)
 
-        print "aantal ngrams: " + str(totalNr)
+        print "aantal ngrams: " + str(totalNr) #dit is voor unigrams
         print "WOORD - FREQ - REL FREQ"
-        for k in countDict.most_common(5):
+        for k in countDict.most_common(200): 
             print k[0] + " - " + str(k[1]) + " - " + str(k[1]/float(totalNr))
 
     except Exception as e:
