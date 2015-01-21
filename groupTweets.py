@@ -8,7 +8,7 @@ from functions import *
 #assuming every folder has the same files in it to save time looking for files.
 directory = 'Fixed/Timelines-201408/20140801'
 siteList = getSitesFromFiles(getFiles(directory))
-siteList = ['telegraaf.nl']
+# siteList = ['telegraaf.nl']
 tweetFileTemplate = 'strippedFeatures/Fixed/Timelines-201408/201408%02d/%s.csv'
 httpCheckFileTemplate = "HttpCheck/August 2014/201408%02d/HttpCheck-%s.json"
 
