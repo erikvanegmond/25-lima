@@ -1,0 +1,45 @@
+VRAAG:
+hoelaat
+wanneer
+wat (is)(de reden)
+wellicht
+
+NEGATIEVE CONNOTATIE:
+ai
+helaas
+jammer
+knullig
+onduidelijk
+onhandig
+onmogelijk
+onterecht
+probleem
+shit
+spijtig
+vervelend(e)
+zonde
+
+SAMENSTELLINGEN MET WERKWOORD:
+begrijp niet
+kan niet
+werkt niet
+
+SAMENSTELLINGEN MET BIJWOORD:
+niet beschikbaar
+niet duidelijk
+niet goed
+niet handig
+niet vermeld
+nog (steeds) niet
+specifiek @NS:
+storing
+uitval
+vertraging
+
+specifiek @POSTNL:
+kwijt
+niet aangekomen
+niet bezorgd
+niet overgedragen 
+zoek 
+
