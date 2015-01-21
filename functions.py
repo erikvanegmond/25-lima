@@ -1,9 +1,8 @@
+from logger import *
 import os, glob
 import re
 import numpy as np
 import pandas as pd
-
-from logger import *
 
 PREOFFSET = 1
 POSTOFFSET = 2
@@ -72,3 +71,43 @@ def getUptimeRanges(downtimeRanges, downtimeData):
 
     return uptimeRanges
 
+
+def getNgramsFromString(n, string):
+    '''
+    Returns ngrams of string in a list format
+    '''
+    words = string.split()
+    ngrams=[]
+    position = 0
+    for i in range(0,len(words)-n+1):
+        ngrams.append(" ".join(words[position:position+n]))
+        position+=1
+    return ngrams
+
+
+def getNgramsFromMessageList(n, messageList):
+    '''
+    Return an Ngram dict if a list of messages is entered in this format:
+    [
+        {
+            text:'message1',
+            otherFeature:value,
+            anotherFeature:anothervalue
+        },
+        {
+            text:'message2',
+            otherFeature:value,
+            anotherFeature:anothervalue
+        },
+        ....
+    ]
+
+    creates ngrams of size n
+    '''
+
+    ngrams = []
+    for message in messageList:
+        if message:
+            ngrams += getNgramsFromString(n, message["text"])
+
+    return ngrams
