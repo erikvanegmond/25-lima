@@ -25,7 +25,7 @@ def run():
                         position+=1  
                 
         countDict = Counter(ngrams)
-        totalNr = len(totalNr)
+        totalNr = len(ngrams)
 
         print "aantal ngrams: " + str(totalNr) #dit is voor unigrams
         print "WOORD - FREQ - REL FREQ"
