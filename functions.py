@@ -1,8 +1,10 @@
 from logger import *
 import os, glob
-import re
 import numpy as np
 import pandas as pd
+import re
+import json
+from collections import Counter
 
 PREOFFSET = 1
 POSTOFFSET = 2
@@ -114,5 +116,16 @@ def getNgramsFromMessageList(n, messageList):
             ngrams += getNgramsFromString(n, message["text"])
 
     return ngrams
+
+def getNgramFrequenciesFromFiles(n, fileList):
+    ngrams = []
+    for inputFile in fileList:
+        text = open(inputFile).read()
+        messageList = json.loads(text)
+        ngrams += getNgramsFromMessageList(n, messageList)
+
+    countDict = Counter(ngrams)
+    totalNr = len(ngrams)
+    return (countDict, totalNr)
 
 

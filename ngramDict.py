@@ -13,18 +13,15 @@ def run():
     ngrams = []
 
     try:
+        fileLocations = []
         for myFile in files:
             inputFile = directory+'/'+myFile
-            text = open(inputFile).read()
-            messageList = json.loads(text)
-            ngrams += getNgramsFromMessageList(n, messageList)
+            fileLocations.append(inputFile)
 
-        countDict = Counter(ngrams)
-        totalNr = len(ngrams)
-
+        (countDict, totalNr) = getNgramFrequenciesFromFiles(n, fileLocations)
         print "aantal ngrams: " + str(totalNr) #dit is voor unigrams
         print "WOORD - FREQ - REL FREQ"
-        for k in countDict.most_common(200): 
+        for k in countDict.most_common(200):
             print k[0] + " - " + str(k[1]) + " - " + str(k[1]/float(totalNr))
 
     except Exception as e:
