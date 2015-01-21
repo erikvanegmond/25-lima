@@ -1,3 +1,9 @@
+Problemen: 
+sarcasme herkennen
+weinig klachttweets
+
+-- ALFABETISCH -- 
+
 VRAAG:
 hoelaat
 wanneer
@@ -8,14 +14,19 @@ NEGATIEVE CONNOTATIE:
 ai
 helaas
 jammer
+klacht
 knullig
+melding
 onduidelijk
 onhandig
 onmogelijk
 onterecht
 probleem
 shit
+storing
 spijtig
+storing
+verbinding
 vervelend(e)
 zonde
 
@@ -25,12 +36,14 @@ kan niet
 werkt niet
 
 SAMENSTELLINGEN MET BIJWOORD:
+helemaal niet
 niet beschikbaar
 niet duidelijk
 niet goed
 niet handig
 niet vermeld
 nog (steeds) niet
+
 specifiek @NS:
 storing
 uitval
