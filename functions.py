@@ -83,6 +83,7 @@ def getNgramsFromString(n, string):
     '''
     Returns ngrams of string in a list format
     '''
+    string = re.sub('[^a-zA-Z\d\s@:!?#]','', string).lower()
     words = string.split()
     ngrams=[]
     position = 0
@@ -143,6 +144,9 @@ def groupTweets(writeToFile=False):
     for site in siteList:
         logging.info(site)
         for i in range(1,32):
+            downtimeData = None
+            tweetData = None
+
             downtimeFile = httpCheckFileTemplate % (i, site)
             tweetFile = tweetFileTemplate % (i, site)
 
@@ -151,7 +155,7 @@ def groupTweets(writeToFile=False):
                 downtimeData = pd.read_json(downtimeFile)
                 tweetData = pd.read_json(tweetFile)
             except:
-                logging.warn("%s or %s cannot be opened" % (downtimeFile, tweetFile))
+                # logging.warn("%s or %s cannot be opened" % (downtimeFile, tweetFile))
                 continue
 
             try:
@@ -187,9 +191,11 @@ def groupTweets(writeToFile=False):
     if writeToFile:
         with open("downtimeTweets.json", 'w') as f:
             f.write(json.dumps(downtimeTweets, indent=1))
+            logging.info("Saved downtimeTweets in downtimeTweets.json")
 
         with open("uptimeTweets.json", 'w') as f:
             f.write(json.dumps(uptimeTweets, indent=1))
+            logging.info("Saved uptimeTweets in uptimeTweets.json")
 
     return (downtimeTweets, uptimeTweets)
 
