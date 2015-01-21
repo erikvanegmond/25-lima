@@ -43,6 +43,7 @@ niet goed
 niet handig
 niet vermeld
 nog (steeds) niet
+
 specifiek @NS:
 storing
 uitval
