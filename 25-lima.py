@@ -1,6 +1,5 @@
 from functions import *
 import argparse
-import pprint as pp
 
 def main():
     arg_parser = argparse.ArgumentParser()
@@ -17,6 +16,8 @@ def main():
                     help="File containing the uptime tweets")
     arg_parser.add_argument("-downtime", "--downtime",
                     help="File containing the downtime tweets")
+    arg_parser.add_argument("-n", "--n",
+                    help="n for the Ngrams")
 
     args = arg_parser.parse_args()
 
@@ -32,54 +33,17 @@ def main():
     elif args.relfreq:
 
         if args.uptime is not None and args.downtime is not None:
-            relFreq(args.uptime, args.downtime)
+            if args.n:
+                if args.n.isdigit():
+                    relFreq(args.uptime, args.downtime, int(args.n))
+                else:
+                    print "%s entered for -n is not a number while it should" % (args.n)
+                    exit()
+            else:
+                relFreq(args.uptime, args.downtime)
         else:
             print "uptime and/or downtime files are missing!"
             exit()
-
-
-def relFreq(uptimeFile, downtimeFile):
-    n = 1
-    minCount = 10
-
-    if not(os.path.exists(uptimeFile) and uptimeFile[-5:] ==".json"):
-        print "%s is not a valid json file!" % (uptimeFile)
-        exit()
-    if not(os.path.exists(downtimeFile) and downtimeFile[-5:] ==".json"):
-        print "%s is not a valid json file!" % (downtimeFile)
-        exit()
-
-    (downtimeCountDict, downtimeTotalNr) = getNgramFrequenciesFromFiles(n, [downtimeFile])
-    (uptimeCountDict, uptimeTotalNr) = getNgramFrequenciesFromFiles(n, [uptimeFile])
-
-    relativeList = []
-    allWords = set(downtimeCountDict.keys()+uptimeCountDict.keys())
-
-    for word in allWords:
-        if downtimeCountDict[word] > minCount:
-            wordDict = {}
-            if word in uptimeCountDict:
-                ufreq = uptimeCountDict[word]/float(uptimeTotalNr)
-            else:
-                ufreq = 0
-
-            if word in downtimeCountDict:
-                dfreq = downtimeCountDict[word]/float(downtimeTotalNr)
-            else:
-                dfreq = 0
-
-            wordDict['ufreq'] = ufreq
-            wordDict['uCount'] = uptimeCountDict[word]
-            wordDict['dfreq'] = dfreq
-            wordDict['dCount'] = downtimeCountDict[word]
-            wordDict['relfreq'] = dfreq/ufreq if ufreq else -1
-
-            relativeList.append((word, wordDict))
-    relativeList = sorted(relativeList, key=lambda x: x[1]['relfreq'], reverse=True)
-    pp.pprint( relativeList[:100])
-
-
-
 
 if __name__ == '__main__':
     main()
