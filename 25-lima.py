@@ -6,6 +6,12 @@ def main():
     arg_parser.add_argument('-all', "--all", action='store_true', default=False,
                     dest='run_all',
                     help='Runs the entire process, from reading the raw data files until a classifier is produced')
+    arg_parser.add_argument('-prepare', "--prepare", action='store_true', default=False,
+                    dest='prepareData',
+                    help='prepares the data for classification, reads raw files, strips the features and groups the tweets')
+    arg_parser.add_argument('-stripFeatures', "--stripFeatures", action='store_true', default=False,
+                    dest='stripFeatures',
+                    help='Extracts the relevant features from datasets, writes to file in root folder.')
     arg_parser.add_argument('-groupTweets', "--groupTweets", action='store_true', default=False,
                     dest='groupTweets',
                     help='Groups the tweets in two seperate sets, uptime and downtime. Writes to file in root folder. CAN TAKE A LONG TIME!')
@@ -28,6 +34,10 @@ def main():
         add other steps
         '''
     elif args.groupTweets:
+        groupTweets(True)
+
+    elif args.prepareData:
+        stripFeatures(True)
         groupTweets(True)
 
     elif args.relfreq:
