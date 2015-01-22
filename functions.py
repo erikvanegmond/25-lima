@@ -5,6 +5,8 @@ import pandas as pd
 import re
 import json
 from collections import Counter
+import pprint as pp
+
 
 PREOFFSET = 1
 POSTOFFSET = 2
@@ -76,14 +78,19 @@ def getUptimeRanges(downtimeRanges, downtimeData):
     return uptimeRanges
 
 def tweetDataToMessageList(tweetData):
-    messageList = [{'created_at':str(index), 'text':row['text'].encode('ascii', 'ignore')} for index, row in tweetData.iterrows()]
+    messageList = [
+                    {'created_at':str(index),
+                     'text':row['text'].encode('ascii', 'ignore'),
+                     'id':row['id'],
+                     'user':row['user']['name']
+                    } for index, row in tweetData.iterrows()]
     return messageList
 
 def getNgramsFromString(n, string):
     '''
     Returns ngrams of string in a list format
     '''
-    string = re.sub('[^a-zA-Z\d\s@:!?#]','', string).lower()
+    string = re.sub('(\^[A-Z]{2})|([^a-zA-Z\d\s@:!?#])','', string).lower()
     words = string.split()
     ngrams=[]
     position = 0
@@ -229,3 +236,45 @@ def fixFiles(directoryTemplate):
         except:
             continue
 
+def relFreq(uptimeFile, downtimeFile, n=1):
+    minCount = 1
+    print n
+    if not(os.path.exists(uptimeFile) and uptimeFile[-5:] ==".json"):
+        print "%s is not a valid json file!" % (uptimeFile)
+        exit()
+    if not(os.path.exists(downtimeFile) and downtimeFile[-5:] ==".json"):
+        print "%s is not a valid json file!" % (downtimeFile)
+        exit()
+
+    (downtimeCountDict, downtimeTotalNr) = getNgramFrequenciesFromFiles(n, [downtimeFile])
+    (uptimeCountDict, uptimeTotalNr) = getNgramFrequenciesFromFiles(n, [uptimeFile])
+
+    relativeList = []
+    allWords = set(downtimeCountDict.keys()+uptimeCountDict.keys())
+
+    for word in allWords:
+        if downtimeCountDict[word] > minCount:
+            wordDict = {}
+            if word in uptimeCountDict:
+                ufreq = uptimeCountDict[word]/float(uptimeTotalNr)
+            else:
+                ufreq = 0
+
+            if word in downtimeCountDict:
+                dfreq = downtimeCountDict[word]/float(downtimeTotalNr)
+            else:
+                dfreq = 0
+
+            wordDict['ufreq'] = ufreq
+            wordDict['uCount'] = uptimeCountDict[word]
+            wordDict['dfreq'] = dfreq
+            wordDict['dCount'] = downtimeCountDict[word]
+            wordDict['relfreq'] = dfreq/ufreq if ufreq else -1
+
+            relativeList.append((word, wordDict))
+    relativeList = sorted(relativeList, key=lambda x: x[1]['relfreq'], reverse=True)
+    pp.pprint( relativeList[:100])
+
+def messageListToCSV(messageList){
+
+}
