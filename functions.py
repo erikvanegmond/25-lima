@@ -9,7 +9,7 @@ import pprint as pp
 
 
 PREOFFSET = 1
-POSTOFFSET = 2
+POSTOFFSET = 4
 
 def getFiles(directory = ".", fileFilter="*"):
     """ Get the files from a folder.
@@ -275,6 +275,17 @@ def relFreq(uptimeFile, downtimeFile, n=1):
     relativeList = sorted(relativeList, key=lambda x: x[1]['relfreq'], reverse=True)
     pp.pprint( relativeList[:100])
 
-def messageListToCSV(messageList){
+def messageListToCSV(messageList, dest):
+    features = messageList[0].keys()
+    with open(dest, 'w') as f:
+        f.write(",".join(features))
+        f.write("\n")
+        for message in messageList:
+            line = ""
+            for feature in features:
+                line += "\"%s\"," % (message[feature])
+            line = line.strip(",")+"\n"
+            f.write(line.encode('ascii', 'ignore'))
 
-}
+
+    return
