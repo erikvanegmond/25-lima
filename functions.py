@@ -359,3 +359,19 @@ def messageListToCSV(messageList, dest):
 
 
     return
+    
+def csvToJson(csvFile): 
+    # for now this only works for CSV export google format!!
+    
+    csvfile = open(csvFile, 'r')
+    jsonfile = open('labeledData.json', 'w')
+
+    r = csv.reader(csvfile)
+    features = tuple(r.next())
+
+    reader = csv.DictReader(csvfile, fieldnames=features ,delimiter=',')
+    messageList = [ row for row in reader ]
+    out = json.dumps( messageList , indent=1 )
+    jsonfile.write(out)    
+    
+    return messageList
