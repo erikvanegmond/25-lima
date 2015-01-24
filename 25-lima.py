@@ -9,6 +9,9 @@ def main():
     arg_parser.add_argument('-prepare', "--prepare", action='store_true', default=False,
                     dest='prepareData',
                     help='prepares the data for classification, reads raw files, strips the features and groups the tweets')
+    arg_parser.add_argument('-fixFiles', "--fixFiles", action='store_true', default=False,
+                    dest='fixFiles',
+                    help='Fix the files, by replacing null values in ASCII.')
     arg_parser.add_argument('-stripFeatures', "--stripFeatures", action='store_true', default=False,
                     dest='stripFeatures',
                     help='Extracts the relevant features from datasets, writes to file in root folder.')
@@ -37,8 +40,12 @@ def main():
         groupTweets(True)
 
     elif args.prepareData:
-        stripFeatures(True)
-        groupTweets(True)
+        #fixFiles('Timelines-201408/201408%02d')
+        #stripFeatures(True)
+        #groupTweets(True)
+        (uptime, downtime)=groupTweets(True)
+        messageListToCSV(uptime,'CSV/uptime.csv')
+        messageListToCSV(downtime,'CSV/downtime.csv')
 
     elif args.relfreq:
 

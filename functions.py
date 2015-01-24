@@ -362,7 +362,8 @@ def messageListToCSV(messageList, dest):
 
 def csvToJson(csvFile):
     # for now this only works for CSV export google format!!
-
+    # TO DO fix timestamps
+     
     csvfile = open(csvFile, 'r')
     jsonfile = open('labeledData.json', 'w')
 
