@@ -3,7 +3,7 @@ import os, glob, sys
 import numpy as np
 import pandas as pd
 import re
-import json
+import json, csv
 from collections import Counter
 import pprint as pp
 
@@ -263,7 +263,7 @@ def stripFeatures(writeToFile=False):
             print(exc_type)
             print inputFile
             print(exc_tb.tb_lineno)
-            print str(e)+"!"      
+            print str(e)+"!"
 
 def extractFeatures(message):
     relevantFeaturesList = ["text",
@@ -359,10 +359,10 @@ def messageListToCSV(messageList, dest):
 
 
     return
-    
-def csvToJson(csvFile): 
+
+def csvToJson(csvFile):
     # for now this only works for CSV export google format!!
-    
+
     csvfile = open(csvFile, 'r')
     jsonfile = open('labeledData.json', 'w')
 
@@ -372,6 +372,6 @@ def csvToJson(csvFile):
     reader = csv.DictReader(csvfile, fieldnames=features ,delimiter=',')
     messageList = [ row for row in reader ]
     out = json.dumps( messageList , indent=1 )
-    jsonfile.write(out)    
-    
+    jsonfile.write(out)
+
     return messageList
