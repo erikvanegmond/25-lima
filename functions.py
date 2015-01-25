@@ -346,8 +346,14 @@ def relFreq(uptimeFile, downtimeFile, n=1):
     pp.pprint( relativeList[:100])
 
 def messageListToCSV(messageList, dest):
+    messageList=[]
     features = messageList[0].keys()
-    with open(dest, 'w') as f:
+
+    outDir = 'CSV/'+dest
+    if not os.path.exists(outDir):
+        os.makedirs(outDir)
+
+    with open(outDir, 'w') as f:
         f.write(",".join(features))
         f.write("\n")
         for message in messageList:

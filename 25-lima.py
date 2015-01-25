@@ -40,12 +40,14 @@ def main():
         groupTweets(True)
 
     elif args.prepareData:
-        #fixFiles('Timelines-201408/201408%02d')
+       # fixFiles('Timelines-201408/201408%02d')
         #stripFeatures(True)
         #groupTweets(True)
-        (uptime, downtime)=groupTweets(True)
-        messageListToCSV(uptime,'CSV/uptime.csv')
-        messageListToCSV(downtime,'CSV/downtime.csv')
+   
+        (uptimeTweets, downtimeTweets)=groupTweets(True)
+        #waar komt csv in logger
+        messageListToCSV(uptimeTweets,'uptime.csv')
+        messageListToCSV(downtimeTweets,'downtime.csv')
 
     elif args.relfreq:
 
