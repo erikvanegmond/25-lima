@@ -13,20 +13,16 @@ import numpy as np
 import pandas as pd
 import pprint as pp
 
-# Fields describing time period of comparison
+# Fields describing time period of comparison monitoring data and tweets
 PREOFFSET = 1
 POSTOFFSET = 4
 
 def getFiles(directory = ".", fileFilter="*"):
-    """ Get the files from a folder.
+    """ 
+        Returns a list of all (default) files in the selected folder
 
-        Default gets all files from the current folder.
-
-        Arguments:
         directory = the directory to get the files from
-        fileFilter = a pattern to match the filenames, see default python glob
-
-        Returns a list of all files in the selected folder
+        fileFilter = a pattern to match the file names, see default Python glob  
     """
     directory += "/" if directory[-1] is not "/" else ""
     files = []
@@ -41,7 +37,9 @@ def getFiles(directory = ".", fileFilter="*"):
 
 def getSitesFromFiles(fileList):
     '''
-    Returns all the sites that have a file listed in the fileList
+        Returns a list of all sites that have a file in the fileList
+        
+        fileList: list of files from the Timelines data set
     '''
     siteList = []
     for file in fileList:
@@ -51,6 +49,12 @@ def getSitesFromFiles(fileList):
     return siteList
 
 def getDowntimeRanges(downtimeList, downtimeData):
+    '''
+        Returns a list
+        
+        downtimeList:
+        downtimeData:
+    '''
     downtimeRanges = []
     for (i, downtimeMoment) in downtimeList.iteritems():
         #make sure we have some downtime data to get, if not just do it with minutes.
@@ -66,6 +70,12 @@ def getDowntimeRanges(downtimeList, downtimeData):
     return downtimeRanges
 
 def getUptimeRanges(downtimeRanges, downtimeData):
+    '''
+        Returns 
+        
+        downtimeList:
+        downtimeData:
+    '''
     timestamp = pd.to_datetime(downtimeData[downtimeData.index == 0]['timestamp'].values[0], dayfirst=True)
     startDay = pd.to_datetime(pd.datetime(timestamp.year, timestamp.month, timestamp.day))
     endDay = pd.to_datetime(pd.datetime(timestamp.year, timestamp.month, timestamp.day, 23,59,59))
@@ -84,6 +94,11 @@ def getUptimeRanges(downtimeRanges, downtimeData):
     return uptimeRanges
 
 def tweetDataToMessageList(tweetData):
+    '''
+        Returns a list of tweets in JSON format
+        
+        tweetData:
+    '''
     messageList = [
                     {'created_at':str(index),
                      'text':row['text'].encode('ascii', 'ignore'),
@@ -94,7 +109,10 @@ def tweetDataToMessageList(tweetData):
 
 def getNgramsFromString(n, string):
     '''
-    Returns ngrams of string in a list format
+        Returns n-grams of string in a list format
+        
+        n: the length of the n-gram sequence
+        string: sequence of natural language
     '''
     string = re.sub('(\^[A-Z]{2})|([^a-zA-Z\d\s@:!?#])','', string).lower()
     words = string.split()
@@ -107,32 +125,24 @@ def getNgramsFromString(n, string):
 
 def getNgramsFromMessageList(n, messageList):
     '''
-    Return an Ngram dict if a list of messages is entered in this format:
-    [
-        {
-            text:'message1',
-            otherFeature:value,
-            anotherFeature:anothervalue
-        },
-        {
-            text:'message2',
-            otherFeature:value,
-            anotherFeature:anothervalue
-        },
-        ....
-    ]
+        Returns an n-gram dictionary
 
-    creates ngrams of size n
+        n: length of the n-gram sequence
+        messageList: list of tweets (JSON format)
     '''
-
     ngrams = []
     for message in messageList:
         if message:
             ngrams += getNgramsFromString(n, message["text"])
-
     return ngrams
 
 def getNgramFrequenciesFromFiles(n, fileList):
+    '''
+        Returns a dictionary with n-gram frequencies and the total number of n-grams
+
+        n: length of the n-gram sequence
+        fileList: list of files from the Timelines data set
+    '''
     ngrams = []
     for inputFile in fileList:
         text = open(inputFile).read()
@@ -144,10 +154,15 @@ def getNgramFrequenciesFromFiles(n, fileList):
     return (countDict, totalNr)
 
 def groupTweets(writeToFile=False):
+    '''
+        Returns a list of tweets regarding uptime and a list of tweets regarding downtime
+
+        writeToFile: save to disk (boolean)
+    '''
     #assuming every folder has the same files in it to save time looking for files.
     directory = 'Fixed/Timelines-201408/20140801'
     siteList = getSitesFromFiles(getFiles(directory))
-    # siteList = ['telegraaf.nl']
+
     tweetFileTemplate = 'strippedFeatures/Fixed/Timelines-201408/201408%02d/%s.csv'
     httpCheckFileTemplate = "HttpCheck/August 2014/201408%02d/HttpCheck-%s.json"
 
@@ -212,7 +227,12 @@ def groupTweets(writeToFile=False):
 
     return (downtimeTweets, uptimeTweets)
 
-def fixFiles(directoryTemplate):
+def fixFiles(directoryTemplate='Timelines-201408/201408%02d'):
+    '''
+        Repairs the data corruption, removes null characters 
+
+        directoryTemplate: source on disk (default: 'Timelines-201408/201408%02d')
+    '''
     for i in range(1,32):
         try:
             directory = directoryTemplate % (i)
@@ -222,7 +242,6 @@ def fixFiles(directoryTemplate):
                 for file in glob.glob("*.csv"):
                     files.append(file)
                 os.chdir('../..')
-
 
                 for myFile in files:
                     inputFile = directory+'/'+myFile
@@ -246,8 +265,7 @@ def stripFeatures(writeToFile=False):
     """ 
         Creates a new folder with all tweet messages with only relevant features  
 
-        Arguments:
-        writeToFile = boolean  to save to disk
+        writeToFile = save to disk (boolean)
     """
     directory = 'Fixed/Timelines-201408/20140801'
     files = getFiles(directory)
@@ -278,12 +296,9 @@ def stripFeatures(writeToFile=False):
 
 def extractFeatures(message):
     """ 
-        Extract the relevant features from a single tweet message  
+        Returns a tweet with only relevant features
 
-        Arguments:
-        message = a single tweet, including all features from Twitter API 
-
-        Returns the stripped tweet message
+        message = a single tweet, including all features from Twitter API
     """
     relevantFeaturesList = ["text",
                             "in_reply_to_status_id",
@@ -317,10 +332,16 @@ def extractFeatures(message):
     for userFeature in message['user'].keys():
         if userFeature not in relevantFeaturesList:
             message['user'].pop(userFeature, None)
-
     return message
 
 def relFreq(uptimeFile, downtimeFile, n=1):
+    """ 
+        Display frequency statistics of uptime and downtime tweets 
+
+        uptimeFile: the JSON file with all the uptime tweets 
+        downtimeFile: the JSON file with all the downdtime tweets
+        n: length of the n-gram sequence
+    """
     minCount = 1
     print n
     if not(os.path.exists(uptimeFile) and uptimeFile[-5:] ==".json"):
@@ -360,7 +381,12 @@ def relFreq(uptimeFile, downtimeFile, n=1):
     pp.pprint( relativeList[:100])
 
 def messageListToCSV(messageList, dest):
-    messageList=[]
+    """ 
+        Converts a list of tweets to CSV format and saves to disk
+
+        messageList: list of tweets (JSON format)
+        dest: name of the output file (eg "name.csv")
+    """
     features = messageList[0].keys()
 
     outDir = 'CSV/'+dest
@@ -377,16 +403,11 @@ def messageListToCSV(messageList, dest):
             line = line.strip(",")+"\n"
             f.write(line.encode('ascii', 'ignore'))
 
-    return
-
 def csvToJson(csvFile):
     """ 
-        Converts a CSV file to JSON, converts the time format and writes to disk.  
+        Converts a CSV file to JSON, converts the time format, writes to disk and returns list tweets
 
-        Arguments:
-        csvFile = input file with header line of column names and comma separated
-
-        Returns a list of tweet messages
+        csvFile = comma separated input file with header line of column names
     """
      
     csvfile = open(csvFile, 'r')
