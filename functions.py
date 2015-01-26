@@ -82,7 +82,7 @@ def tweetDataToMessageList(tweetData):
                     {'created_at':str(index),
                      'text':row['text'].encode('ascii', 'ignore'),
                      'id':row['id'],
-                     'user':row['user']['name']
+                     'user':row['user']['id']
                     } for index, row in tweetData.iterrows()]
     return messageList
 
@@ -367,8 +367,8 @@ def messageListToCSV(messageList, dest):
     return
 
 def csvToJson(csvFile):
-    # for now this only works for CSV export google format!!
-    # TO DO fix timestamps
+    # for now this only works for CSV export from Google format!!
+    # this means: with header of column names and ,-separated
      
     csvfile = open(csvFile, 'r')
     jsonfile = open('labeledData.json', 'w')
@@ -378,6 +378,11 @@ def csvToJson(csvFile):
 
     reader = csv.DictReader(csvfile, fieldnames=features ,delimiter=',')
     messageList = [ row for row in reader ]
+    
+    for message in messageList:
+    message["created_at"] = datetime.strptime(message["created_at"],
+    '%d/%m/%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+    
     out = json.dumps( messageList , indent=1 )
     jsonfile.write(out)
 
