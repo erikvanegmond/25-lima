@@ -421,8 +421,8 @@ def csvToJson(csvFile):
     
     try:
         for message in messageList:
-        message["created_at"] = datetime.strptime(message["created_at"],
-        '%d/%m/%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+            message["created_at"] = datetime.strptime(message["created_at"],
+            '%d/%m/%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
     except Exception as e:    
         print "Expected different time format in " + str(csvFile) + ":\n" + str(e)
         
