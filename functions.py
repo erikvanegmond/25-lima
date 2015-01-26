@@ -1,13 +1,19 @@
+"""
+    HAL24K data analysis - project Leren & Beslissen
+    Timothy Dingeman, Erik van Egmond, Sebastiaan Hoekstra, Jos Wezenberg
+    January, 2015 - University of Amsterdam
+"""
+
+# Import libraries 
 from logger import *
-import os, glob, sys
+from collections import Counter
+from datetime import datetime
+import os, glob, sys, json, csv, re
 import numpy as np
 import pandas as pd
-import re
-import json, csv
-from collections import Counter
 import pprint as pp
 
-
+# Fields describing time period of comparison
 PREOFFSET = 1
 POSTOFFSET = 4
 
@@ -237,7 +243,12 @@ def fixFiles(directoryTemplate):
             continue
 
 def stripFeatures(writeToFile=False):
-   #assuming every folder has the same files in it to save time looking for files.
+    """ 
+        Creates a new folder with all tweet messages with only relevant features  
+
+        Arguments:
+        writeToFile = boolean  to save to disk
+    """
     directory = 'Fixed/Timelines-201408/20140801'
     files = getFiles(directory)
 
@@ -266,6 +277,14 @@ def stripFeatures(writeToFile=False):
             print str(e)+"!"
 
 def extractFeatures(message):
+    """ 
+        Extract the relevant features from a single tweet message  
+
+        Arguments:
+        message = a single tweet, including all features from Twitter API 
+
+        Returns the stripped tweet message
+    """
     relevantFeaturesList = ["text",
                             "in_reply_to_status_id",
                             "id",
@@ -300,11 +319,6 @@ def extractFeatures(message):
             message['user'].pop(userFeature, None)
 
     return message
-
-
-
-
-
 
 def relFreq(uptimeFile, downtimeFile, n=1):
     minCount = 1
@@ -363,12 +377,17 @@ def messageListToCSV(messageList, dest):
             line = line.strip(",")+"\n"
             f.write(line.encode('ascii', 'ignore'))
 
-
     return
 
 def csvToJson(csvFile):
-    # for now this only works for CSV export from Google format!!
-    # this means: with header of column names and ,-separated
+    """ 
+        Converts a CSV file to JSON, converts the time format and writes to disk.  
+
+        Arguments:
+        csvFile = input file with header line of column names and comma separated
+
+        Returns a list of tweet messages
+    """
      
     csvfile = open(csvFile, 'r')
     jsonfile = open('labeledData.json', 'w')
@@ -379,10 +398,13 @@ def csvToJson(csvFile):
     reader = csv.DictReader(csvfile, fieldnames=features ,delimiter=',')
     messageList = [ row for row in reader ]
     
-    for message in messageList:
-    message["created_at"] = datetime.strptime(message["created_at"],
-    '%d/%m/%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
-    
+    try:
+        for message in messageList:
+        message["created_at"] = datetime.strptime(message["created_at"],
+        '%d/%m/%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+    except Exception as e:    
+        print "Expected different time format in " + str(csvFile) + ":\n" + str(e)
+        
     out = json.dumps( messageList , indent=1 )
     jsonfile.write(out)
 

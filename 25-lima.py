@@ -1,3 +1,9 @@
+"""
+    HAL24K data analysis - project Leren & Beslissen
+    Timothy Dingeman, Erik van Egmond, Sebastiaan Hoekstra, Jos Wezenberg
+    January, 2015 - University of Amsterdam
+"""
+
 from functions import *
 import argparse
 
@@ -40,11 +46,13 @@ def main():
         groupTweets(True)
 
     elif args.prepareData:
-       # fixFiles('Timelines-201408/201408%02d')
+        #fixFiles('Timelines-201408/201408%02d')
         #stripFeatures(True)
         #groupTweets(True)
    
         (uptimeTweets, downtimeTweets)=groupTweets(True)
+        print downtimeTweets[0]
+        
         #waar komt csv in logger
         messageListToCSV(uptimeTweets,'uptime.csv')
         messageListToCSV(downtimeTweets,'downtime.csv')
