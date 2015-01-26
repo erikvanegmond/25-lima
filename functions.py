@@ -380,20 +380,20 @@ def relFreq(uptimeFile, downtimeFile, n=1):
     relativeList = sorted(relativeList, key=lambda x: x[1]['relfreq'], reverse=True)
     pp.pprint( relativeList[:100])
 
-def messageListToCSV(messageList, dest):
+def messageListToCSV(messageList, filename):
     """ 
         Converts a list of tweets to CSV format and saves to disk
 
         messageList: list of tweets (JSON format)
-        dest: name of the output file (eg "name.csv")
+        filename: name of the output file (eg "name.csv")
     """
     features = messageList[0].keys()
 
-    outDir = 'CSV/'+dest
+    outDir = 'CSV/'
     if not os.path.exists(outDir):
         os.makedirs(outDir)
 
-    with open(outDir, 'w') as f:
+    with open(outDir+'/'+filename, 'w') as f:
         f.write(",".join(features))
         f.write("\n")
         for message in messageList:
