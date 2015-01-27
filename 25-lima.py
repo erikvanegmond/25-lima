@@ -3,15 +3,12 @@
     Timothy Dingeman, Erik van Egmond, Sebastiaan Hoekstra, Jos Wezenberg
     January, 2015 - University of Amsterdam
 """
-
+25
 from functions import *
 import argparse
 
 def main():
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('-all', "--all", action='store_true', default=False,
-                    dest='run_all',
-                    help='Runs the entire process, from reading the raw data files until a classifier is produced')
     arg_parser.add_argument('-prepare', "--prepare", action='store_true', default=False,
                     dest='prepareData',
                     help='prepares the data for classification, reads raw files, strips the features and groups the tweets')
@@ -36,14 +33,13 @@ def main():
 
     args = arg_parser.parse_args()
 
-    if args.run_all:
+    if args.fixFiles:
         fixFiles('Timelines-201408/201408%02d')
-        '''
-        TODO:
-        add other steps
-        '''
     elif args.groupTweets:
         groupTweets(True)
+
+    elif args.stripFeatures:
+        stripFeatures(True)
 
     elif args.prepareData:
         #fixFiles('Timelines-201408/201408%02d')
