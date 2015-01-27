@@ -35,12 +35,10 @@ def main():
 
     if args.fixFiles:
         fixFiles('Timelines-201408/201408%02d')
-    elif args.groupTweets:
-        groupTweets(True)
-
     elif args.stripFeatures:
         stripFeatures(True)
-
+    elif args.groupTweets:
+        groupTweets(True)
     elif args.prepareData:
         #fixFiles('Timelines-201408/201408%02d')
         #stripFeatures(True)
@@ -52,9 +50,7 @@ def main():
         #waar komt csv in logger
         messageListToCSV(uptimeTweets,'uptime.csv')
         messageListToCSV(downtimeTweets,'downtime.csv')
-
     elif args.relfreq:
-
         if args.uptime is not None and args.downtime is not None:
             if args.n:
                 if args.n.isdigit():
