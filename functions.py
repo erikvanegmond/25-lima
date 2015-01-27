@@ -333,7 +333,7 @@ def extractFeatures(message):
         if feature not in relevantFeaturesList:
             message.pop(feature, None)
     for userFeature in message['user'].keys():
-        if userFeature not in relevantFeaturesList:
+        if userFeature not in relevantUserFeaturesList:
             message['user'].pop(userFeature, None)
     return message
 
