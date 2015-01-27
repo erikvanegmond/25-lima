@@ -291,18 +291,21 @@ def stripFeatures(writeToFile=False):
                 with open(outDir+'/'+myFile, 'w') as f:
                     f.write(json.dumps(messageList, indent=1))
 
+        except IOError as e:
+            logging.warn("Skipped the following file (does not exist): %s" % (inputFile))
+            continue
+        except ValueError as e:
+            logging.warn("Skipped the following file (incorrect format): %s" % (inputFile))
+            continue
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
-            print(exc_type)
-            print inputFile
-            print(exc_tb.tb_lineno)
-            print str(e)+"!"
+            logging.error("Type: %s \n Line: %s \n Error: %s" % (exc_type,exc_tb.tb_lineno,str(e)))
 
 def extractFeatures(message):
     """
         Returns a tweet with only relevant features
 
-        message = a single tweet, including all features from Twitter API
+        message = a single tweet, with all features from Twitter API
     """
     relevantFeaturesList = ["text",
                             "in_reply_to_status_id",
@@ -349,10 +352,10 @@ def relFreq(uptimeFile, downtimeFile, n=1):
     minCount = 1
     print n
     if not(os.path.exists(uptimeFile) and uptimeFile[-5:] ==".json"):
-        print "%s is not a valid json file!" % (uptimeFile)
+        logging.error("%s is not a valid json file!" % (uptimeFile))
         exit()
     if not(os.path.exists(downtimeFile) and downtimeFile[-5:] ==".json"):
-        print "%s is not a valid json file!" % (downtimeFile)
+        logging.error("%s is not a valid json file!" % (downtimeFile))
         exit()
 
     (downtimeCountDict, downtimeTotalNr) = getNgramFrequenciesFromFiles(n, [downtimeFile])
@@ -428,7 +431,7 @@ def csvToJson(csvFile):
             message["created_at"] = datetime.strptime(message["created_at"],
             '%d/%m/%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
     except Exception as e:
-        print "Expected different time format in " + str(csvFile) + ":\n" + str(e)
+        logging.error("Expected different time format in %s %s " % (csvFile,str(e)))
 
     out = json.dumps( messageList , indent=1 )
     jsonfile.write(out)
