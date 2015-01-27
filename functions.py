@@ -240,8 +240,8 @@ def fixFiles(directoryTemplate='Timelines-201408/201408%02d'):
         try:
             directory = directoryTemplate % (i)
             files = []
+            os.chdir(directory)
             try:
-                os.chdir(directory)
                 for file in glob.glob("*.csv"):
                     files.append(file)
                 os.chdir('../..')
@@ -262,6 +262,7 @@ def fixFiles(directoryTemplate='Timelines-201408/201408%02d'):
                 logging.warn("Something went wrong at:%d, %s" %( exc_tb.tb_lineno, str(e)))
                 break
         except:
+            #Ignore error when month has less than 31 days
             continue
 
 def stripFeatures(writeToFile=False):
