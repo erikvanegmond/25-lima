@@ -443,9 +443,22 @@ def csvToJson(csvFile):
 
     return messageList
 
-def createTrainSet(messageList):
+def createHugeTrainSet(messageList):
+    logging.info( "Creating trainset" )
+    downtime_set = [message for message in messageList if message['downtime']=='1']
+    uptime_set = [message for message in messageList if message['downtime']=='0']
+    nDowntime = len(downtime_set)
+    nUptime = len(uptime_set)
+
+    multiplier = int(nUptime/nDowntime)
+    newDowntime_set = downtime_set * multiplier
+    train_set = uptime_set + newDowntime_set
+    # print "mlist %d, newMlist %d, uptime %d, downtime %d, newDowntime %d" % (len(messageList), len(newMessageList), len(uptime_set), len(downtime_set), len(newDowntime_set))
+    return train_set
+
+def createRandomTrainSet(messageList):
     import random
-    print "Creating trainset"
+    logging.info( "Creating trainset" )
     train_set = [message for message in messageList if message['downtime']=='1']
     print len(range(0, len(train_set)))
     nMessages = len(messageList)
@@ -496,11 +509,11 @@ def getFeaturesFromText(featureList, text):
     return features
 
 def naiveBayes():
-    inputFile = 'labeled.json'
+    inputFile = 'labeledData.json'
     text = open(inputFile).read()
     messageList = json.loads(text)
 
-    trainset = createTrainSet(messageList)
+    trainset = createHugeTrainSet(messageList)
 
     featureList = getNgramsFromMessageList(1, messageList)
 
