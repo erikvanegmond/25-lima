@@ -505,11 +505,11 @@ def naiveBayes():
     text = open(inputFile).read()
     messageList = json.loads(text)
 
-    trainset = createHugeTrainSet(messageList)
+    # trainset = createTrainSet(messageList)
 
     featureList = getNgramsFromMessageList(1, messageList)
 
-    train_data = createTrainData(trainset, featureList)
+    train_data = createTrainData(messageList, featureList)
 
     testset = createTestSet()
 
