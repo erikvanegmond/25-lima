@@ -30,6 +30,7 @@ def main():
                     help="File containing the downtime tweets")
     arg_parser.add_argument("-n", "--n",
                     help="n for the Ngrams")
+    arg_parser.add_argument('-csvToJson', '--csvToJson', help="file to convert to json")
 
     args = arg_parser.parse_args()
 
@@ -43,10 +44,10 @@ def main():
         #fixFiles('Timelines-201408/201408%02d')
         #stripFeatures(True)
         #groupTweets(True)
-   
+
         (uptimeTweets, downtimeTweets)=groupTweets(True)
         print downtimeTweets[0]
-        
+
         #waar komt csv in logger
         messageListToCSV(uptimeTweets,'uptime.csv')
         messageListToCSV(downtimeTweets,'downtime.csv')
@@ -63,6 +64,8 @@ def main():
         else:
             print "uptime and/or downtime files are missing!"
             exit()
+    elif args.csvToJson is not None:
+        csvToJson(args.csvToJson)
 
 if __name__ == '__main__':
     main()
