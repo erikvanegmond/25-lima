@@ -291,6 +291,14 @@ def stripFeatures(writeToFile=False):
                 with open(outDir+'/'+myFile, 'w') as f:
                     f.write(json.dumps(messageList, indent=1))
 
+        except IOError as e:
+            print "Skipped the following file (does not exist):"
+            print inputFile
+            continue
+        except ValueError as e:
+            print "Skipped the following file (incorrect format):"
+            print inputFile
+            continue
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             print(exc_type)
@@ -302,7 +310,7 @@ def extractFeatures(message):
     """
         Returns a tweet with only relevant features
 
-        message = a single tweet, including all features from Twitter API
+        message = a single tweet, with all features from Twitter API
     """
     relevantFeaturesList = ["text",
                             "in_reply_to_status_id",
