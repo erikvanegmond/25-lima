@@ -352,10 +352,10 @@ def relFreq(uptimeFile, downtimeFile, n=1):
     minCount = 1
     print n
     if not(os.path.exists(uptimeFile) and uptimeFile[-5:] ==".json"):
-        print "%s is not a valid json file!" % (uptimeFile)
+        logging.error("%s is not a valid json file!" % (uptimeFile))
         exit()
     if not(os.path.exists(downtimeFile) and downtimeFile[-5:] ==".json"):
-        print "%s is not a valid json file!" % (downtimeFile)
+        logging.error("%s is not a valid json file!" % (downtimeFile))
         exit()
 
     (downtimeCountDict, downtimeTotalNr) = getNgramFrequenciesFromFiles(n, [downtimeFile])
@@ -431,7 +431,7 @@ def csvToJson(csvFile):
             message["created_at"] = datetime.strptime(message["created_at"],
             '%d/%m/%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
     except Exception as e:
-        logging.error("Expected different time format in %s %s " % (csvFile,str(e))
+        logging.error("Expected different time format in %s %s " % (csvFile,str(e)))
 
     out = json.dumps( messageList , indent=1 )
     jsonfile.write(out)
