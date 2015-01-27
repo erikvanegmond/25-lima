@@ -4,7 +4,7 @@
     January, 2015 - University of Amsterdam
 """
 
-# Import libraries 
+# Import libraries
 from logger import *
 from collections import Counter
 from datetime import datetime
@@ -12,17 +12,20 @@ import os, glob, sys, json, csv, re
 import numpy as np
 import pandas as pd
 import pprint as pp
+from nltk.classify import SklearnClassifier
+from sklearn.naive_bayes import BernoulliNB
+from nltk.corpus import stopwords
 
 # Fields describing time period of comparison monitoring data and tweets
 PREOFFSET = 1
 POSTOFFSET = 4
 
 def getFiles(directory = ".", fileFilter="*"):
-    """ 
+    """
         Returns a list of all (default) files in the selected folder
 
         directory = the directory to get the files from
-        fileFilter = a pattern to match the file names, see default Python glob  
+        fileFilter = a pattern to match the file names, see default Python glob
     """
     directory += "/" if directory[-1] is not "/" else ""
     files = []
@@ -38,7 +41,7 @@ def getFiles(directory = ".", fileFilter="*"):
 def getSitesFromFiles(fileList):
     '''
         Returns a list of all sites that have a file in the fileList
-        
+
         fileList: list of files from the Timelines data set
     '''
     siteList = []
@@ -51,7 +54,7 @@ def getSitesFromFiles(fileList):
 def getDowntimeRanges(downtimeList, downtimeData):
     '''
         Returns a list
-        
+
         downtimeList:
         downtimeData:
     '''
@@ -71,8 +74,8 @@ def getDowntimeRanges(downtimeList, downtimeData):
 
 def getUptimeRanges(downtimeRanges, downtimeData):
     '''
-        Returns 
-        
+        Returns
+
         downtimeList:
         downtimeData:
     '''
@@ -96,7 +99,7 @@ def getUptimeRanges(downtimeRanges, downtimeData):
 def tweetDataToMessageList(tweetData):
     '''
         Returns a list of tweets in JSON format
-        
+
         tweetData:
     '''
     messageList = [
@@ -110,7 +113,7 @@ def tweetDataToMessageList(tweetData):
 def getNgramsFromString(n, string):
     '''
         Returns n-grams of string in a list format
-        
+
         n: the length of the n-gram sequence
         string: sequence of natural language
     '''
@@ -229,7 +232,7 @@ def groupTweets(writeToFile=False):
 
 def fixFiles(directoryTemplate='Timelines-201408/201408%02d'):
     '''
-        Repairs the data corruption, removes null characters 
+        Repairs the data corruption, removes null characters
 
         directoryTemplate: source on disk (default: 'Timelines-201408/201408%02d')
     '''
@@ -262,8 +265,8 @@ def fixFiles(directoryTemplate='Timelines-201408/201408%02d'):
             continue
 
 def stripFeatures(writeToFile=False):
-    """ 
-        Creates a new folder with all tweet messages with only relevant features  
+    """
+        Creates a new folder with all tweet messages with only relevant features
 
         writeToFile = save to disk (boolean)
     """
@@ -295,7 +298,7 @@ def stripFeatures(writeToFile=False):
             print str(e)+"!"
 
 def extractFeatures(message):
-    """ 
+    """
         Returns a tweet with only relevant features
 
         message = a single tweet, including all features from Twitter API
@@ -335,10 +338,10 @@ def extractFeatures(message):
     return message
 
 def relFreq(uptimeFile, downtimeFile, n=1):
-    """ 
-        Display frequency statistics of uptime and downtime tweets 
+    """
+        Display frequency statistics of uptime and downtime tweets
 
-        uptimeFile: the JSON file with all the uptime tweets 
+        uptimeFile: the JSON file with all the uptime tweets
         downtimeFile: the JSON file with all the downdtime tweets
         n: length of the n-gram sequence
     """
@@ -381,7 +384,7 @@ def relFreq(uptimeFile, downtimeFile, n=1):
     pp.pprint( relativeList[:100])
 
 def messageListToCSV(messageList, filename):
-    """ 
+    """
         Converts a list of tweets to CSV format and saves to disk
 
         messageList: list of tweets (JSON format)
@@ -404,12 +407,12 @@ def messageListToCSV(messageList, filename):
             f.write(line.encode('ascii', 'ignore'))
 
 def csvToJson(csvFile):
-    """ 
+    """
         Converts a CSV file to JSON, converts the time format, writes to disk and returns list tweets
 
         csvFile = comma separated input file with header line of column names
     """
-     
+
     csvfile = open(csvFile, 'r')
     jsonfile = open('labeledData.json', 'w')
 
@@ -418,15 +421,87 @@ def csvToJson(csvFile):
 
     reader = csv.DictReader(csvfile, fieldnames=features ,delimiter=',')
     messageList = [ row for row in reader ]
-    
+
     try:
         for message in messageList:
             message["created_at"] = datetime.strptime(message["created_at"],
             '%d/%m/%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
-    except Exception as e:    
+    except Exception as e:
         print "Expected different time format in " + str(csvFile) + ":\n" + str(e)
-        
+
     out = json.dumps( messageList , indent=1 )
     jsonfile.write(out)
 
     return messageList
+
+def createTrainSet(messageList):
+    import random
+    print "Creating trainset"
+    train_set = [message for message in messageList if message['downtime']=='1']
+    print len(range(0, len(train_set)))
+    nMessages = len(messageList)
+    for i in range(0, len(train_set)):
+        while True:
+            randMessage = messageList[random.randrange(nMessages)]
+            if randMessage not in train_set:
+                train_set.append(randMessage)
+                break
+    return train_set
+
+def createTrainData(newMessageList, featureList):
+    train_data = []
+    for message in newMessageList:
+        text = message['text']
+        features = getFeaturesFromText(featureList, text)
+        train_data.append((features, message['downtime']))
+
+    return train_data
+
+def createTestSet():
+    test_strings = ["@Belastingdienst Ik kan niet meer inloggen op toeslagen.nl. Ik krijg elke keer een error op de pagina.",
+                "@Hostnet_Webcare mail werkt niet !! storing bij hostnet!! graag spoedig aktie!!",
+                "@Hostnet_Webcare Bedankt voor jullie snelle reactie. Vervelend dat het hostnet niet lukt om de boel een beetje stabiel te houden..",
+                "@ingnl mijning is niet bereikbaar vanuit Denemark. Bij gebruik van proxy, waardoor lijkt dat ik in NL ben werkt het wel. Wordt dit opgelost?",
+                "@Bimati log je in vanaf ing.nl of vanuit je favorieten? Melin",
+                "@deouderemise ik kan dit niet verklaren. Heb je al gebeld? Anders kun je mn collega morgen vanaf 8 uur bereiken. ^Linda",
+                "dit is een test text",
+                "Een feestje in de studio zometeen met @kovacs_music, Aziz &amp; Ramiks en @SoundRush_, live bij @wijnand3fm: http://t.co/cuLqBIp4ZU #3FM",
+                "de site is down"
+                ]
+    return test_strings
+
+def createTestData(test_strings, featureList):
+    test_data = []
+    for string in test_strings:
+        features = getFeaturesFromText(featureList, string)
+        test_data.append(features)
+    return test_data
+
+def getFeaturesFromText(featureList, text):
+    sw = stopwords.words('dutch')
+    features = {x:0 for x in featureList if len(x)>3 and x not in sw}
+    ngrams = getNgramsFromString(1, text)
+    for gram in ngrams:
+        if gram in features:
+            features[gram] += 1
+    return features
+
+def naiveBayes():
+    inputFile = 'labeled.json'
+    text = open(inputFile).read()
+    messageList = json.loads(text)
+
+    trainset = createTrainSet(messageList)
+
+    featureList = getNgramsFromMessageList(1, messageList)
+
+    train_data = createTrainData(trainset, featureList)
+
+    testset = createTestSet()
+
+    test_data = createTestData(testset, featureList)
+
+    classif = SklearnClassifier(BernoulliNB()).train(train_data)
+
+    print classif.classify_many(test_data)
+
