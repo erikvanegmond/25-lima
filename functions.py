@@ -15,6 +15,8 @@ import pprint as pp
 from nltk.classify import SklearnClassifier
 from sklearn.naive_bayes import BernoulliNB
 from nltk.corpus import stopwords
+import random
+
 
 # Fields describing time period of comparison monitoring data and tweets
 PREOFFSET = 1
@@ -452,7 +454,6 @@ def createHugeTrainSet(messageList):
     return train_set
 
 def createRandomTrainSet(messageList):
-    import random
     logging.info( "Creating trainset" )
     train_set = [message for message in messageList if message['downtime']=='1']
     print len(range(0, len(train_set)))
@@ -465,9 +466,9 @@ def createRandomTrainSet(messageList):
                 break
     return train_set
 
-def createTrainData(newMessageList, featureList):
+def createTrainData(messageList, featureList):
     train_data = []
-    for message in newMessageList:
+    for message in messageList:
         text = message['text']
         features = getFeaturesFromText(featureList, text)
         train_data.append((features, message['downtime']))
@@ -487,10 +488,11 @@ def createTestSet():
                 ]
     return test_strings
 
-def createTestData(test_strings, featureList):
+def createTestData(messageList, featureList):
     test_data = []
-    for string in test_strings:
-        features = getFeaturesFromText(featureList, string)
+    for message in messageList:
+        text = message['text']
+        features = getFeaturesFromText(featureList, text)
         test_data.append(features)
     return test_data
 
@@ -503,22 +505,82 @@ def getFeaturesFromText(featureList, text):
             features[gram] += 1
     return features
 
-def naiveBayes():
+def splitDataSet(dataset, ratio):
+    downtime_set = [message for message in dataset if message['downtime']=='1']
+    uptime_set = [message for message in dataset if message['downtime']=='0']
+
+    nDowntimeTrain = int(len(downtime_set)*ratio)
+    nDowntimeTest = len(downtime_set)-nDowntimeTrain
+
+    nUptimeTrain = int(len(uptime_set)*ratio)
+    nUptimeTest = len(uptime_set)-nUptimeTrain
+
+    train_set = []
+    test_set = []
+
+    for i in range(0,nDowntimeTrain):
+        randomIndex = random.randrange(len(downtime_set))
+        train_set.append(downtime_set[randomIndex])
+        del downtime_set[randomIndex]
+
+    test_set = test_set + downtime_set
+
+    for i in range(0,nUptimeTrain):
+        randomIndex = random.randrange(len(uptime_set))
+        train_set.append(uptime_set[randomIndex])
+        del uptime_set[randomIndex]
+
+    test_set = test_set + uptime_set
+    return (train_set, test_set)
+
+def getAccuracy(classifResults, test_data):
+    truepos = 0
+    falsepos = 0
+    trueneg = 0
+    falseneg = 0
+
+    for i, result in enumerate(classifResults):
+        if result == '1':
+            if result == test_data[i]['downtime']:
+                truepos += 1
+            else:
+                falsepos += 1
+        if result == '0':
+            if result == test_data[i]['downtime']:
+                trueneg += 1
+            else:
+                falseneg += 1
+    print "True positive: %d, False positive: %d, True negative: %d, False negative: %d" %(truepos, falsepos, trueneg, falseneg)
+
+def naiveBayes(inputFile, datasetMethod=0):
     inputFile = 'labeledData.json'
+
     text = open(inputFile).read()
     messageList = json.loads(text)
 
-    # trainset = createTrainSet(messageList)
+    if datasetMethod == 0:
+        dataset = messageList
+    elif datasetMethod == 1:
+        dataset = createHugeTrainSet(messageList)
+    elif datasetMethod == 2:
+        dataset = createRandomTrainSet(messageList)
 
+    logging.info("splitting the dataset into train and test...")
+    (trainset, testset) = splitDataSet(dataset, 0.7)
+
+    logging.info("Getting the features from the data set...")
     featureList = getNgramsFromMessageList(1, messageList)
 
-    train_data = createTrainData(messageList, featureList)
-
-    testset = createTestSet()
+    logging.info("Creating train data...")
+    train_data = createTrainData(trainset, featureList)
 
     test_data = createTestData(testset, featureList)
 
+    logging.info("Creating a classifier...")
     classif = SklearnClassifier(BernoulliNB()).train(train_data)
 
-    print classif.classify_many(test_data)
+    logging.info("Classifying...")
+    classifResults = classif.classify_many(test_data)
+
+    getAccuracy(classifResults, testset)
 
