@@ -50,11 +50,26 @@ January, 2015 - University of Amsterdam
                     help='The file that contains the classified data in csv format')
         parser.add_argument('output',
                     help='The file will be created in json format')
+        parser.add_argument('--saveClassifier',
+                    help='The classifier will be pickled in this file')
 
         args = parser.parse_args(sys.argv[2:])
 
         csvToJson(args.input, args.output)
-        naiveBayes(args.output)
+        if args.saveClassifier:
+            naiveBayes(args.output, 0, args.saveClassifier)
+        else:
+            naiveBayes(args.output)
+
+    def demo(self):
+        parser = argparse.ArgumentParser(
+            description='Run the demo')
+        parser.add_argument('classifier',
+                    help='The file that contains the pickled classifier')
+
+        args = parser.parse_args(sys.argv[2:])
+
+        demo(args.classifier)
 
 
     def subModule(self):

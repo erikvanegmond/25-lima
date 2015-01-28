@@ -16,6 +16,7 @@ from nltk.classify import SklearnClassifier
 from sklearn.naive_bayes import BernoulliNB
 from nltk.corpus import stopwords
 import random
+import pickle
 
 
 # Fields describing time period of comparison monitoring data and tweets
@@ -58,7 +59,7 @@ def getDowntimeRanges(downtimeList, downtimeData):
         Returns a list of ranges using the OFFSET fields around downtime events
 
         downtimeList: the downtime events from a single site found by isDown = True
-        downtimeData: all the events from a single site from HttpCheck 
+        downtimeData: all the events from a single site from HttpCheck
     '''
     downtimeRanges = []
     for (i, downtimeMoment) in downtimeList.iteritems():
@@ -71,7 +72,7 @@ def getDowntimeRanges(downtimeList, downtimeData):
             postDowntimeMoment = pd.to_datetime(downtimeData[downtimeData.index == i+POSTOFFSET]['timestamp'].values[0], dayfirst=True)
         else:
             postDowntimeMoment = downtimeMoment + np.timedelta64(10, 'm')
-            
+
         downtimeRanges.append((preDowntimeMoment,postDowntimeMoment))
     return downtimeRanges
 
@@ -79,8 +80,8 @@ def getUptimeRanges(downtimeRanges, downtimeData):
     '''
         Returns a list of uptime ranges, found by comparing the time between downtime ranges
 
-        downtimeRanges: a list of ranges using the OFFSET fields around downtime events 
-        downtimeData: all the events from a single site from HttpCheck 
+        downtimeRanges: a list of ranges using the OFFSET fields around downtime events
+        downtimeData: all the events from a single site from HttpCheck
     '''
     timestamp = pd.to_datetime(downtimeData[downtimeData.index == 0]['timestamp'].values[0], dayfirst=True)
     startDay = pd.to_datetime(pd.datetime(timestamp.year, timestamp.month, timestamp.day))
@@ -203,7 +204,7 @@ def groupTweets(writeToFile=False):
 
                     downtimeRanges = getDowntimeRanges(downtimes, downtimeData)
                     uptimeRanges = getUptimeRanges(downtimeRanges, downtimeData)
-              
+
                     for downtimeRange in downtimeRanges:
                         messageList = tweetDataToMessageList(tweetData[downtimeRange[0]:downtimeRange[1]])
                         for message in messageList:
@@ -215,8 +216,8 @@ def groupTweets(writeToFile=False):
                         messageList = tweetDataToMessageList(tweetData[uptimeRange[0]:uptimeRange[1]])
                         for message in messageList:
                             if message not in uptimeTweets:
-                                uptimeTweets.append(message)         
-                                
+                                uptimeTweets.append(message)
+
             except IndexError as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 logging.error("IndexError on line %d,  %s" % (exc_tb.tb_lineno,e))
@@ -556,7 +557,7 @@ def getAccuracy(classifResults, test_data):
                 falseneg += 1
     print "True positive: %d, False positive: %d, True negative: %d, False negative: %d" %(truepos, falsepos, trueneg, falseneg)
 
-def naiveBayes(inputFile, datasetMethod=0):
+def naiveBayes(inputFile, datasetMethod=0, pickleLocation=None):
     inputFile = 'labeledData.json'
 
     text = open(inputFile).read()
@@ -583,8 +584,25 @@ def naiveBayes(inputFile, datasetMethod=0):
     logging.info("Creating a classifier...")
     classif = SklearnClassifier(BernoulliNB()).train(train_data)
 
+    if pickleLocation is not None:
+        output = open(pickleLocation, 'wb')
+        pickle.dump(classif, output)
+        pickle.dump(featureList, output)
+        output.close()
+
     logging.info("Classifying...")
     classifResults = classif.classify_many(test_data)
 
     getAccuracy(classifResults, testset)
+
+def demo(classifier):
+    pkl_file = open(classifier, 'rb')
+    classif = pickle.load(pkl_file)
+    featureList = pickle.load(pkl_file)
+    print "Classifier loaded!"
+    while True:
+        tweet = raw_input("Enter a tweet:\n")
+        print classif.classify(getFeaturesFromText(featureList, tweet))
+
+
 
