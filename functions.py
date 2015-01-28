@@ -412,7 +412,7 @@ def messageListToCSV(messageList, filename):
             line = line.strip(",")+"\n"
             f.write(line.encode('ascii', 'ignore'))
 
-def csvToJson(csvFile):
+def csvToJson(csvFile, jsonFile = 'labeledData.json'):
     """
         Converts a CSV file to JSON, converts the time format, writes to disk and returns list tweets
 
@@ -420,7 +420,7 @@ def csvToJson(csvFile):
     """
 
     csvfile = open(csvFile, 'r')
-    jsonfile = open('labeledData.json', 'w')
+    jsonfile = open(jsonFile, 'w')
 
     r = csv.reader(csvfile)
     features = tuple(r.next())

@@ -44,7 +44,17 @@ January, 2015 - University of Amsterdam
         messageListToCSV(downtimeTweets,'downtime.csv')
 
     def train(self):
-        print 'train'
+        parser = argparse.ArgumentParser(
+            description='Run the trainer')
+        parser.add_argument('input',
+                    help='The file that contains the classified data in csv format')
+        parser.add_argument('output',
+                    help='The file will be created in json format')
+
+        args = parser.parse_args(sys.argv[2:])
+
+        csvToJson(args.input, args.output)
+        naiveBayes(args.output)
 
 
     def subModule(self):
@@ -64,8 +74,13 @@ January, 2015 - University of Amsterdam
                     dest='groupTweets',
                     help='Groups the tweets in two seperate sets, uptime and downtime. Writes to file in root folder. CAN TAKE A LONG TIME!')
         parser.add_argument('-csvToJson', '--csvToJson', help="file to convert to json")
+        parser.add_argument('-naiveBayes', '--naiveBayes', help="Train naive bayes on a json file, add the json file as argument")
 
-        args = parser.parse_args(sys.argv[2:3])
+        if "--help" in sys.argv[3:] or "-h" in sys.argv[3:]:
+            newArgs = filter(lambda a: a != '-h' and a != '--help', sys.argv[2:])
+            args = parser.parse_args(newArgs)
+        else:
+            args = parser.parse_args(sys.argv[2:])
 
 
 
@@ -79,12 +94,10 @@ January, 2015 - University of Amsterdam
             relfreq_parser.add_argument("-n", "--n", type=int,
                         help="n for the Ngrams")
             relfreq_args = relfreq_parser.parse_args(sys.argv[3:])
-
             if relfreq_args.n:
-                relFreq(args.uptime, args.downtime, int(args.n))
+                relFreq(relfreq_args.uptime, relfreq_args.downtime, int(relfreq_args.n))
             else:
-                relFreq(args.uptime, args.downtime)
-
+                relFreq(relfreq_args.uptime, relfreq_args.downtime)
         elif args.fixFiles:
             fixFiles('Timelines-201408/201408%02d')
         elif args.stripFeatures:
@@ -93,6 +106,8 @@ January, 2015 - University of Amsterdam
             groupTweets(True)
         elif args.csvToJson:
             csvToJson(args.csvToJson)
+        elif args.naiveBayes:
+            naiveBayes(args.naiveBayes)
 
 
 
