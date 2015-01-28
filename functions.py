@@ -55,10 +55,10 @@ def getSitesFromFiles(fileList):
 
 def getDowntimeRanges(downtimeList, downtimeData):
     '''
-        Returns a list
+        Returns a list of ranges using the OFFSET fields around downtime events
 
-        downtimeList:
-        downtimeData:
+        downtimeList: the downtime events from a single site found by isDown = True
+        downtimeData: all the events from a single site from HttpCheck 
     '''
     downtimeRanges = []
     for (i, downtimeMoment) in downtimeList.iteritems():
@@ -71,15 +71,16 @@ def getDowntimeRanges(downtimeList, downtimeData):
             postDowntimeMoment = pd.to_datetime(downtimeData[downtimeData.index == i+POSTOFFSET]['timestamp'].values[0], dayfirst=True)
         else:
             postDowntimeMoment = downtimeMoment + np.timedelta64(10, 'm')
+            
         downtimeRanges.append((preDowntimeMoment,postDowntimeMoment))
     return downtimeRanges
 
 def getUptimeRanges(downtimeRanges, downtimeData):
     '''
-        Returns
+        Returns a list of uptime ranges, found by comparing the time between downtime ranges
 
-        downtimeList:
-        downtimeData:
+        downtimeRanges: a list of ranges using the OFFSET fields around downtime events 
+        downtimeData: all the events from a single site from HttpCheck 
     '''
     timestamp = pd.to_datetime(downtimeData[downtimeData.index == 0]['timestamp'].values[0], dayfirst=True)
     startDay = pd.to_datetime(pd.datetime(timestamp.year, timestamp.month, timestamp.day))
@@ -196,11 +197,13 @@ def groupTweets(writeToFile=False):
                     downtimeData['timestamp'] = pd.to_datetime(downtimeData['timestamp'], dayfirst=True)
                     tweetData['created_at'] = pd.to_datetime(tweetData['created_at'], dayfirst=True)
                     tweetData.index = pd.to_datetime(tweetData.pop('created_at'))
+                    if not tweetData.index.is_monotonic:
+                        tweetData = tweetData.sort()
                     downtimes = downtimeData[downtimeData["IsDown"].isin([True])]['timestamp']
 
                     downtimeRanges = getDowntimeRanges(downtimes, downtimeData)
                     uptimeRanges = getUptimeRanges(downtimeRanges, downtimeData)
-
+              
                     for downtimeRange in downtimeRanges:
                         messageList = tweetDataToMessageList(tweetData[downtimeRange[0]:downtimeRange[1]])
                         for message in messageList:
@@ -208,11 +211,12 @@ def groupTweets(writeToFile=False):
                                 downtimeTweets.append(message)
 
                     for uptimeRange in uptimeRanges:
+                        temp = tweetData[uptimeRange[0]:uptimeRange[1]]
                         messageList = tweetDataToMessageList(tweetData[uptimeRange[0]:uptimeRange[1]])
                         for message in messageList:
                             if message not in uptimeTweets:
-                                uptimeTweets.append(message)
-
+                                uptimeTweets.append(message)         
+                                
             except IndexError as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 logging.error("IndexError on line %d,  %s" % (exc_tb.tb_lineno,e))
