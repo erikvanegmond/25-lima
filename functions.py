@@ -14,6 +14,8 @@ import pandas as pd
 import pprint as pp
 from nltk.classify import SklearnClassifier
 from sklearn.naive_bayes import BernoulliNB
+from sklearn.svm import LinearSVC
+from sklearn import neighbors
 from nltk.corpus import stopwords
 import random
 import pickle
@@ -580,12 +582,11 @@ def getAccuracy(classifResults, test_data):
                 falseneg += 1
     print "True positive: %d, False positive: %d, True negative: %d, False negative: %d" %(truepos, falsepos, trueneg, falseneg)
     accuracy = (truepos + trueneg)/float(len(classifResults))
-    precision = float(truepos)/float(falsepos+truepos)
-    recall = float(truepos)/float(falseneg+truepos)
+    precision = float(truepos)/float(falsepos+truepos) if float(falsepos+truepos) else -1
+    recall = float(truepos)/float(falseneg+truepos) if float(falseneg+truepos) else -1
     print "Accuracy: %f, Precision: %f, Recall: %f" % (accuracy, precision, recall)
 
-def naiveBayes(inputFile, datasetMethod=0, pickleLocation=None):
-    inputFile = 'labeledData.json'
+def classifier(inputFile, pickleLocation=None, classifier="naiveBayes", datasetMethod=0):
 
     text = open(inputFile).read()
     messageList = json.loads(text)
@@ -608,8 +609,16 @@ def naiveBayes(inputFile, datasetMethod=0, pickleLocation=None):
 
     test_data = createTestData(testset, featureList)
 
-    logging.info("Creating a classifier...")
-    classif = SklearnClassifier(BernoulliNB()).train(train_data)
+    logging.info("Creating a classifier using %s..." % (classifier))
+    if classifier == "naiveBayes":
+        classif = SklearnClassifier(BernoulliNB()).train(train_data)
+    elif classifier == "linearSVC":
+        classif = SklearnClassifier(LinearSVC()).train(train_data)
+    elif classifier == "neighbors":
+        classif = SklearnClassifier(neighbors.KNeighborsClassifier()).train(train_data)
+    else:
+        logging.error("Unknown classifier %s" %(classifier))
+        return
 
     if pickleLocation is not None:
         output = open(pickleLocation, 'wb')
