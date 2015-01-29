@@ -538,28 +538,25 @@ def getFeaturesFromText(featureList, text):
 
 def splitDataSet(dataset, ratio):
     """
-        Find features in text
-        > dataset:
-        > ratio:
+        Mix and split a dataset into a train and test set
+        > dataset: set of messages with downtime label
+        > ratio: the ratio of the size of the train set and the test set
     """
     downtime_set = [message for message in dataset if message['downtime']=='1']
     uptime_set = [message for message in dataset if message['downtime']=='0']
 
     nDowntimeTrain = int(len(downtime_set)*ratio)
     nDowntimeTest = len(downtime_set)-nDowntimeTrain
-
     nUptimeTrain = int(len(uptime_set)*ratio)
     nUptimeTest = len(uptime_set)-nUptimeTrain
 
     train_set = []
     test_set = []
-
     for i in range(0,nDowntimeTrain):
         randomIndex = random.randrange(len(downtime_set))
         train_set.append(downtime_set[randomIndex])
         del downtime_set[randomIndex]
     test_set = test_set + downtime_set
-
     for i in range(0,nUptimeTrain):
         randomIndex = random.randrange(len(uptime_set))
         train_set.append(uptime_set[randomIndex])
@@ -597,6 +594,15 @@ def getAccuracy(classifResults, test_data):
     print "Accuracy: %f, Precision: %f, Recall: %f" % (accuracy, precision, recall)
 
 def classifier(inputFile, pickleLocation=None, classifier="naiveBayes", ratio=0.7, n=1, datasetMethod=0):
+    """
+        A classifier based on SKLEARN that distinguishes tweets to be downTime 
+        > inputFile: a file with tweets in JSON format
+        > pickleLocation: file to save  pickled representation of classifier
+        > classifier: the type of classifier (eg naiveBayes, linearSVC, neighbors)
+        > ratio: the ratio of the size of the train set and the test set
+        > n: the length of the n-gram sequences
+        > datasetMethod: chooses method to create dataset (0:use all,1:use duplicates,2:select random)
+    """
     text = open(inputFile).read()
     messageList = json.loads(text)
 
@@ -641,6 +647,10 @@ def classifier(inputFile, pickleLocation=None, classifier="naiveBayes", ratio=0.
     getAccuracy(classifResults, testset)
 
 def demo(classifier):
+    """
+        A demo which classifies a tweet by input to regard downTime or not
+        > classifier: the type of classifier used (eg. "naiveBayes")
+    """
     pkl_file = open(classifier, 'rb')
     classif = pickle.load(pkl_file)
     featureList = pickle.load(pkl_file)
