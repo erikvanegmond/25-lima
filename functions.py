@@ -342,17 +342,19 @@ def relFreq(uptimeFile, downtimeFile, n=1):
     """
         Display frequency statistics of uptime and downtime tweets
         > uptimeFile: the JSON file with all the uptime tweets
-        > downtimeFile: the JSON file with all the downdtime tweets
+        > downtimeFile: the JSON file with all the downtime tweets
         > n: length of the n-gram sequence
     """
+    
+    # [n=1] chosen minimal frequency to occur, when lower not interesting
     minCount = 10
 
     if not(os.path.exists(uptimeFile) and uptimeFile[-5:] ==".json"):
         logging.error("%s is not a valid json file!" % (uptimeFile))
-        exit()
+        return
     if not(os.path.exists(downtimeFile) and downtimeFile[-5:] ==".json"):
         logging.error("%s is not a valid json file!" % (downtimeFile))
-        exit()
+        return
 
     (downtimeCountDict, downtimeTotalNr) = getNgramFrequenciesFromFiles(n, [downtimeFile])
     (uptimeCountDict, uptimeTotalNr) = getNgramFrequenciesFromFiles(n, [uptimeFile])
@@ -367,7 +369,6 @@ def relFreq(uptimeFile, downtimeFile, n=1):
                 ufreq = uptimeCountDict[word]/float(uptimeTotalNr)
             else:
                 ufreq = 0
-
             if word in downtimeCountDict:
                 dfreq = downtimeCountDict[word]/float(downtimeTotalNr)
             else:
@@ -390,7 +391,7 @@ def relFreq(uptimeFile, downtimeFile, n=1):
 def messageListToCSV(messageList, filename):
     """
         Converts a list of tweets to CSV format and saves to disk
-        > messageList: list of tweets (JSON format)
+        > messageList: list of tweets in JSON format
         > filename: name of the output file (eg "name.csv")
     """
     features = messageList[0].keys()
@@ -412,10 +413,8 @@ def messageListToCSV(messageList, filename):
 def csvToJson(csvFile, jsonFile = 'labeledData.json'):
     """
         Converts a CSV file to JSON, converts the time format, writes to disk and returns list tweets
-
-        csvFile = comma separated input file with header line of column names
+        > csvFile = comma separated input file with header line of column names
     """
-
     csvfile = open(csvFile, 'r')
     jsonfile = open(jsonFile, 'w')
 
@@ -438,7 +437,11 @@ def csvToJson(csvFile, jsonFile = 'labeledData.json'):
     return messageList
 
 def createHugeTrainSet(messageList):
-    logging.info( "Creating trainset" )
+    """
+        Create very large training set, by filling the smaller subset with duplicates
+        > messageList: list of tweets in JSON format
+    """
+    logging.info( "Creating train set" )
     downtime_set = [message for message in messageList if message['downtime']=='1']
     uptime_set = [message for message in messageList if message['downtime']=='0']
     nDowntime = len(downtime_set)
@@ -447,11 +450,14 @@ def createHugeTrainSet(messageList):
     multiplier = int(nUptime/nDowntime)
     newDowntime_set = downtime_set * multiplier
     train_set = uptime_set + newDowntime_set
-    # print "mlist %d, newMlist %d, uptime %d, downtime %d, newDowntime %d" % (len(messageList), len(newMessageList), len(uptime_set), len(downtime_set), len(newDowntime_set))
     return train_set
 
 def createRandomTrainSet(messageList):
-    logging.info( "Creating trainset" )
+    """
+        Create training set by selecting random tweets, no duplicates
+        > messageList: list of tweets in JSON format
+    """
+    logging.info( "Creating train set" )
     train_set = [message for message in messageList if message['downtime']=='1']
     print len(range(0, len(train_set)))
     nMessages = len(messageList)
@@ -464,6 +470,11 @@ def createRandomTrainSet(messageList):
     return train_set
 
 def createTrainData(messageList, featureList):
+    """
+        Create training set using all tweets
+        > messageList: list of tweets in JSON format
+        > featureList: list of features (for Bayes: the n-grams)
+    """
     train_data = []
     for message in messageList:
         text = message['text']
@@ -472,20 +483,12 @@ def createTrainData(messageList, featureList):
 
     return train_data
 
-def createTestSet():
-    test_strings = ["@Belastingdienst Ik kan niet meer inloggen op toeslagen.nl. Ik krijg elke keer een error op de pagina.",
-                "@Hostnet_Webcare mail werkt niet !! storing bij hostnet!! graag spoedig aktie!!",
-                "@Hostnet_Webcare Bedankt voor jullie snelle reactie. Vervelend dat het hostnet niet lukt om de boel een beetje stabiel te houden..",
-                "@ingnl mijning is niet bereikbaar vanuit Denemark. Bij gebruik van proxy, waardoor lijkt dat ik in NL ben werkt het wel. Wordt dit opgelost?",
-                "@Bimati log je in vanaf ing.nl of vanuit je favorieten? Melin",
-                "@deouderemise ik kan dit niet verklaren. Heb je al gebeld? Anders kun je mn collega morgen vanaf 8 uur bereiken. ^Linda",
-                "dit is een test text",
-                "Een feestje in de studio zometeen met @kovacs_music, Aziz &amp; Ramiks en @SoundRush_, live bij @wijnand3fm: http://t.co/cuLqBIp4ZU #3FM",
-                "de site is down"
-                ]
-    return test_strings
-
 def createTestData(messageList, featureList):
+    """
+        Create test set using all tweets
+        > messageList: list of tweets in JSON format
+        > featureList: list of features (for Bayes: the n-grams)
+    """
     test_data = []
     for message in messageList:
         text = message['text']
@@ -494,6 +497,11 @@ def createTestData(messageList, featureList):
     return test_data
 
 def getFeaturesFromText(featureList, text):
+    """
+        Find features in text
+        > featureList: list of features (for Bayes: the n-grams)
+        > text: sequence of natural language
+    """
     sw = stopwords.words('dutch')
     features = {x:0 for x in featureList if len(x)>3 and x not in sw}
     ngrams = getNgramsFromString(1, text)
@@ -503,6 +511,11 @@ def getFeaturesFromText(featureList, text):
     return features
 
 def splitDataSet(dataset, ratio):
+    """
+        Find features in text
+        > dataset: 
+        > ratio:
+    """
     downtime_set = [message for message in dataset if message['downtime']=='1']
     uptime_set = [message for message in dataset if message['downtime']=='0']
 
@@ -519,18 +532,22 @@ def splitDataSet(dataset, ratio):
         randomIndex = random.randrange(len(downtime_set))
         train_set.append(downtime_set[randomIndex])
         del downtime_set[randomIndex]
-
     test_set = test_set + downtime_set
 
     for i in range(0,nUptimeTrain):
         randomIndex = random.randrange(len(uptime_set))
         train_set.append(uptime_set[randomIndex])
         del uptime_set[randomIndex]
-
     test_set = test_set + uptime_set
+    
     return (train_set, test_set)
 
 def getAccuracy(classifResults, test_data):
+    """
+        Display classifier results
+        > classifResults: the labels determined by classifier
+        > test_data: the actual labels
+    """
     truepos = 0
     falsepos = 0
     trueneg = 0
