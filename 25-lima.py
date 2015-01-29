@@ -12,12 +12,12 @@ class Lima(object):
 
 prepare     prepares the data for classification, reads raw files, strips the features and groups the tweets
 train       Train a naive bayes classifier on a data file
-submodule   Run a subModule from 25-lima:
-    relfreq
-    fixFiles
-    stripFeatures
-    groupTweets
-    csvToJson
+subModule   Run a subModule from 25-lima:
+    -relfreq
+    -fixFiles
+    -stripFeatures
+    -groupTweets
+    -csvToJson
             """,
             epilog="""HAL24K data analysis - project Leren & Beslissen
 Timothy Dingeman, Erik van Egmond, Sebastiaan Hoekstra, Jos Wezenberg
