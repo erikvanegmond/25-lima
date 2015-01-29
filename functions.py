@@ -21,16 +21,17 @@ import random
 import pickle
 
 
-# Fields describing time period of comparison monitoring data and tweets
-PREOFFSET = 1
-POSTOFFSET = 4
+# Fields describing period (in test period or minutes) of comparison monitoring data and tweets
+PREOFFSETPERIOD = 1
+POSTOFFSETPERIOD = 4
+PREOFFSETMIN = 5
+POSTOFFSETMIN = 10
 
 def getFiles(directory = ".", fileFilter="*"):
     """
         Returns a list of all (default) files in the selected folder
-
-        directory = the directory to get the files from
-        fileFilter = a pattern to match the file names, see default Python glob
+        > directory = the directory to get the files from
+        > fileFilter = a pattern to match the file names, see default Python glob
     """
     directory += "/" if directory[-1] is not "/" else ""
     files = []
@@ -46,8 +47,7 @@ def getFiles(directory = ".", fileFilter="*"):
 def getSitesFromFiles(fileList):
     '''
         Returns a list of all sites that have a file in the fileList
-
-        fileList: list of files from the Timelines data set
+        > fileList: list of files from the Timelines data set
     '''
     siteList = []
     for file in fileList:
@@ -59,31 +59,28 @@ def getSitesFromFiles(fileList):
 def getDowntimeRanges(downtimeList, downtimeData):
     '''
         Returns a list of ranges using the OFFSET fields around downtime events
-
-        downtimeList: the downtime events from a single site found by isDown = True
-        downtimeData: all the events from a single site from HttpCheck
+        Uses an offset period, or minutes when not available
+        > downtimeList: the downtime events from a single site found by "isDown" = True
+        > downtimeData: all the events from a single site from HttpCheck
     '''
     downtimeRanges = []
     for (i, downtimeMoment) in downtimeList.iteritems():
-        #make sure we have some downtime data to get, if not just do it with minutes.
-        if i > len(downtimeData) - PREOFFSET:
-            preDowntimeMoment = pd.to_datetime(downtimeData[downtimeData.index == i-PREOFFSET]['timestamp'].values[0], dayfirst=True)
+        if i > len(downtimeData) - PREOFFSETPERIOD:
+            preDowntimeMoment = pd.to_datetime(downtimeData[downtimeData.index == i-PREOFFSETPERIOD]['timestamp'].values[0], dayfirst=True)
         else:
-            preDowntimeMoment = downtimeMoment - np.timedelta64(5, 'm')
-        if i < len(downtimeData) - POSTOFFSET:
-            postDowntimeMoment = pd.to_datetime(downtimeData[downtimeData.index == i+POSTOFFSET]['timestamp'].values[0], dayfirst=True)
+            preDowntimeMoment = downtimeMoment - np.timedelta64(PREOFFSETMIN, 'm')
+        if i < len(downtimeData) - POSTOFFSETPERIOD:
+            postDowntimeMoment = pd.to_datetime(downtimeData[downtimeData.index == i+POSTOFFSETPERIOD]['timestamp'].values[0], dayfirst=True)
         else:
-            postDowntimeMoment = downtimeMoment + np.timedelta64(10, 'm')
-
+            postDowntimeMoment = downtimeMoment + np.timedelta64(POSTOFFSETMIN, 'm')
         downtimeRanges.append((preDowntimeMoment,postDowntimeMoment))
     return downtimeRanges
 
 def getUptimeRanges(downtimeRanges, downtimeData):
     '''
         Returns a list of uptime ranges, found by comparing the time between downtime ranges
-
-        downtimeRanges: a list of ranges using the OFFSET fields around downtime events
-        downtimeData: all the events from a single site from HttpCheck
+        > downtimeRanges: a list of ranges using the OFFSET fields around downtime events
+        > downtimeData: all the events from a single site from HttpCheck
     '''
     timestamp = pd.to_datetime(downtimeData[downtimeData.index == 0]['timestamp'].values[0], dayfirst=True)
     startDay = pd.to_datetime(pd.datetime(timestamp.year, timestamp.month, timestamp.day))
@@ -99,14 +96,12 @@ def getUptimeRanges(downtimeRanges, downtimeData):
         uptimeRanges.append((downtimeRanges[-1][1],endDay))
     else:
         uptimeRanges.append((startDay,endDay))
-
     return uptimeRanges
 
 def tweetDataToMessageList(tweetData):
     '''
-        Returns a list of tweets in JSON format
-
-        tweetData:
+        Returns a list of tweets in JSON format using only these four features
+        > tweetData: list of tweets
     '''
     messageList = [
                     {'created_at':str(index),
@@ -119,9 +114,8 @@ def tweetDataToMessageList(tweetData):
 def getNgramsFromString(n, string):
     '''
         Returns n-grams of string in a list format
-
-        n: the length of the n-gram sequence
-        string: sequence of natural language
+        > n: the length of the n-gram sequence
+        > string: sequence of natural language
     '''
     string = re.sub('(\^[A-Z]{2})|([^a-zA-Z\d\s@:!?#])','', string).lower()
     words = string.split()
@@ -135,9 +129,8 @@ def getNgramsFromString(n, string):
 def getNgramsFromMessageList(n, messageList):
     '''
         Returns an n-gram dictionary
-
-        n: length of the n-gram sequence
-        messageList: list of tweets (JSON format)
+        > n: length of the n-gram sequence
+        > messageList: list of tweets in JSON format
     '''
     ngrams = []
     for message in messageList:
@@ -148,16 +141,14 @@ def getNgramsFromMessageList(n, messageList):
 def getNgramFrequenciesFromFiles(n, fileList):
     '''
         Returns a dictionary with n-gram frequencies and the total number of n-grams
-
-        n: length of the n-gram sequence
-        fileList: list of files from the Timelines data set
+        > n: length of the n-gram sequence
+        > fileList: list of files from the Timelines data set
     '''
     ngrams = []
     for inputFile in fileList:
         text = open(inputFile).read()
         messageList = json.loads(text)
         ngrams += getNgramsFromMessageList(n, messageList)
-
     countDict = Counter(ngrams)
     totalNr = len(ngrams)
     return (countDict, totalNr)
@@ -165,16 +156,12 @@ def getNgramFrequenciesFromFiles(n, fileList):
 def groupTweets(writeToFile=False):
     '''
         Returns a list of tweets regarding uptime and a list of tweets regarding downtime
-
-        writeToFile: save to disk (boolean)
+        > writeToFile: save to disk (boolean)
     '''
-    #assuming every folder has the same files in it to save time looking for files.
     directory = 'Fixed/Timelines-201408/20140801'
     siteList = getSitesFromFiles(getFiles(directory))
-
     tweetFileTemplate = 'strippedFeatures/Fixed/Timelines-201408/201408%02d/%s.csv'
     httpCheckFileTemplate = "HttpCheck/August 2014/201408%02d/HttpCheck-%s.json"
-
     downtimeTweets = []
     uptimeTweets = []
 
@@ -183,7 +170,6 @@ def groupTweets(writeToFile=False):
         for i in range(1,32):
             downtimeData = None
             tweetData = None
-
             downtimeFile = httpCheckFileTemplate % (i, site)
             tweetFile = tweetFileTemplate % (i, site)
 
@@ -192,7 +178,8 @@ def groupTweets(writeToFile=False):
                 downtimeData = pd.read_json(downtimeFile)
                 tweetData = pd.read_json(tweetFile)
             except:
-                # logging.warn("%s or %s cannot be opened" % (downtimeFile, tweetFile))
+                if i is not 31:
+                    logging.debug("%s or %s cannot be opened, this data is not available" % (downtimeFile, tweetFile))
                 continue
 
             try:
@@ -200,21 +187,26 @@ def groupTweets(writeToFile=False):
                     downtimeData['timestamp'] = pd.to_datetime(downtimeData['timestamp'], dayfirst=True)
                     tweetData['created_at'] = pd.to_datetime(tweetData['created_at'], dayfirst=True)
                     tweetData.index = pd.to_datetime(tweetData.pop('created_at'))
+                    
+                    # Pandas does not always properly handle Timestamp indices
                     if not tweetData.index.is_monotonic:
                         tweetData = tweetData.sort()
+                    
                     downtimes = downtimeData[downtimeData["IsDown"].isin([True])]['timestamp']
 
                     downtimeRanges = getDowntimeRanges(downtimes, downtimeData)
                     uptimeRanges = getUptimeRanges(downtimeRanges, downtimeData)
 
+                    # Find tweets that are in a period of downtime
                     for downtimeRange in downtimeRanges:
                         messageList = tweetDataToMessageList(tweetData[downtimeRange[0]:downtimeRange[1]])
                         for message in messageList:
                             if message not in uptimeTweets:
                                 downtimeTweets.append(message)
 
+                    # Find tweets that are in surrounding period (uptime)
                     for uptimeRange in uptimeRanges:
-                        if uptimeRange[0] < uptimeRange[1]:
+                        if uptimeRange[0] < uptimeRange[1]: # if overlap
                             temp = tweetData[uptimeRange[0]:uptimeRange[1]]
                             messageList = tweetDataToMessageList(tweetData[uptimeRange[0]:uptimeRange[1]])
                             for message in messageList:
@@ -243,8 +235,7 @@ def groupTweets(writeToFile=False):
 def fixFiles(directoryTemplate='Timelines-201408/201408%02d'):
     '''
         Repairs the data corruption, removes null characters
-
-        directoryTemplate: source on disk (default: 'Timelines-201408/201408%02d')
+        > directoryTemplate: source on disk (default: 'Timelines-201408/201408%02d')
     '''
     for i in range(1,32):
         try:
@@ -272,14 +263,13 @@ def fixFiles(directoryTemplate='Timelines-201408/201408%02d'):
                 logging.warn("Something went wrong at:%d, %s" %( exc_tb.tb_lineno, str(e)))
                 break
         except:
-            #Ignore error when month has less than 31 days
+            # Ignore error when month has less than 31 days
             continue
 
 def stripFeatures(writeToFile=False):
     """
         Creates a new folder with all tweet messages with only relevant features
-
-        writeToFile = save to disk (boolean)
+        > writeToFile = save to disk (boolean)
     """
     directory = 'Fixed/Timelines-201408/20140801'
     files = getFiles(directory)
@@ -314,8 +304,7 @@ def stripFeatures(writeToFile=False):
 def extractFeatures(message):
     """
         Returns a tweet with only relevant features
-
-        message = a single tweet, with all features from Twitter API
+        > message = a single tweet, with all features from Twitter API
     """
     relevantFeaturesList = ["text",
                             "in_reply_to_status_id",
@@ -354,19 +343,20 @@ def extractFeatures(message):
 def relFreq(uptimeFile, downtimeFile, n=1):
     """
         Display frequency statistics of uptime and downtime tweets
-
-        uptimeFile: the JSON file with all the uptime tweets
-        downtimeFile: the JSON file with all the downdtime tweets
-        n: length of the n-gram sequence
+        > uptimeFile: the JSON file with all the uptime tweets
+        > downtimeFile: the JSON file with all the downtime tweets
+        > n: length of the n-gram sequence
     """
+    
+    # [n=1] chosen minimal frequency to occur, when lower not interesting
     minCount = 10
 
     if not(os.path.exists(uptimeFile) and uptimeFile[-5:] ==".json"):
         logging.error("%s is not a valid json file!" % (uptimeFile))
-        exit()
+        return
     if not(os.path.exists(downtimeFile) and downtimeFile[-5:] ==".json"):
         logging.error("%s is not a valid json file!" % (downtimeFile))
-        exit()
+        return
 
     (downtimeCountDict, downtimeTotalNr) = getNgramFrequenciesFromFiles(n, [downtimeFile])
     (uptimeCountDict, uptimeTotalNr) = getNgramFrequenciesFromFiles(n, [uptimeFile])
@@ -381,7 +371,6 @@ def relFreq(uptimeFile, downtimeFile, n=1):
                 ufreq = uptimeCountDict[word]/float(uptimeTotalNr)
             else:
                 ufreq = 0
-
             if word in downtimeCountDict:
                 dfreq = downtimeCountDict[word]/float(downtimeTotalNr)
             else:
@@ -404,9 +393,8 @@ def relFreq(uptimeFile, downtimeFile, n=1):
 def messageListToCSV(messageList, filename):
     """
         Converts a list of tweets to CSV format and saves to disk
-
-        messageList: list of tweets (JSON format)
-        filename: name of the output file (eg "name.csv")
+        > messageList: list of tweets in JSON format
+        > filename: name of the output file (eg "name.csv")
     """
     features = messageList[0].keys()
 
@@ -427,10 +415,8 @@ def messageListToCSV(messageList, filename):
 def csvToJson(csvFile, jsonFile = 'labeledData.json'):
     """
         Converts a CSV file to JSON, converts the time format, writes to disk and returns list tweets
-
-        csvFile = comma separated input file with header line of column names
+        > csvFile = comma separated input file with header line of column names
     """
-
     csvfile = open(csvFile, 'r')
     jsonfile = open(jsonFile, 'w')
 
@@ -453,7 +439,11 @@ def csvToJson(csvFile, jsonFile = 'labeledData.json'):
     return messageList
 
 def createHugeTrainSet(messageList):
-    logging.info( "Creating trainset" )
+    """
+        Create very large training set, by filling the smaller subset with duplicates
+        > messageList: list of tweets in JSON format
+    """
+    logging.info( "Creating train set" )
     downtime_set = [message for message in messageList if message['downtime']=='1']
     uptime_set = [message for message in messageList if message['downtime']=='0']
     nDowntime = len(downtime_set)
@@ -462,11 +452,14 @@ def createHugeTrainSet(messageList):
     multiplier = int(nUptime/nDowntime)
     newDowntime_set = downtime_set * multiplier
     train_set = uptime_set + newDowntime_set
-    # print "mlist %d, newMlist %d, uptime %d, downtime %d, newDowntime %d" % (len(messageList), len(newMessageList), len(uptime_set), len(downtime_set), len(newDowntime_set))
     return train_set
 
 def createRandomTrainSet(messageList):
-    logging.info( "Creating trainset" )
+    """
+        Create training set by selecting random tweets, no duplicates
+        > messageList: list of tweets in JSON format
+    """
+    logging.info( "Creating train set" )
     train_set = [message for message in messageList if message['downtime']=='1']
     print len(range(0, len(train_set)))
     nMessages = len(messageList)
@@ -479,6 +472,11 @@ def createRandomTrainSet(messageList):
     return train_set
 
 def createTrainData(messageList, featureList):
+    """
+        Create training set using all tweets
+        > messageList: list of tweets in JSON format
+        > featureList: list of features (for Bayes: the n-grams)
+    """
     train_data = []
     for message in messageList:
         text = message['text']
@@ -487,20 +485,12 @@ def createTrainData(messageList, featureList):
 
     return train_data
 
-def createTestSet():
-    test_strings = ["@Belastingdienst Ik kan niet meer inloggen op toeslagen.nl. Ik krijg elke keer een error op de pagina.",
-                "@Hostnet_Webcare mail werkt niet !! storing bij hostnet!! graag spoedig aktie!!",
-                "@Hostnet_Webcare Bedankt voor jullie snelle reactie. Vervelend dat het hostnet niet lukt om de boel een beetje stabiel te houden..",
-                "@ingnl mijning is niet bereikbaar vanuit Denemark. Bij gebruik van proxy, waardoor lijkt dat ik in NL ben werkt het wel. Wordt dit opgelost?",
-                "@Bimati log je in vanaf ing.nl of vanuit je favorieten? Melin",
-                "@deouderemise ik kan dit niet verklaren. Heb je al gebeld? Anders kun je mn collega morgen vanaf 8 uur bereiken. ^Linda",
-                "dit is een test text",
-                "Een feestje in de studio zometeen met @kovacs_music, Aziz &amp; Ramiks en @SoundRush_, live bij @wijnand3fm: http://t.co/cuLqBIp4ZU #3FM",
-                "de site is down"
-                ]
-    return test_strings
-
 def createTestData(messageList, featureList):
+    """
+        Create test set using all tweets
+        > messageList: list of tweets in JSON format
+        > featureList: list of features (for Bayes: the n-grams)
+    """
     test_data = []
     for message in messageList:
         text = message['text']
@@ -509,6 +499,11 @@ def createTestData(messageList, featureList):
     return test_data
 
 def getFeaturesFromText(featureList, text):
+    """
+        Find features in text
+        > featureList: list of features (for Bayes: the n-grams)
+        > text: sequence of natural language
+    """
     sw = stopwords.words('dutch')
     features = {x:0 for x in featureList if len(x)>3 and x not in sw}
     ngrams = getNgramsFromString(1, text)
@@ -518,6 +513,11 @@ def getFeaturesFromText(featureList, text):
     return features
 
 def splitDataSet(dataset, ratio):
+    """
+        Find features in text
+        > dataset: 
+        > ratio:
+    """
     downtime_set = [message for message in dataset if message['downtime']=='1']
     uptime_set = [message for message in dataset if message['downtime']=='0']
 
@@ -534,18 +534,22 @@ def splitDataSet(dataset, ratio):
         randomIndex = random.randrange(len(downtime_set))
         train_set.append(downtime_set[randomIndex])
         del downtime_set[randomIndex]
-
     test_set = test_set + downtime_set
 
     for i in range(0,nUptimeTrain):
         randomIndex = random.randrange(len(uptime_set))
         train_set.append(uptime_set[randomIndex])
         del uptime_set[randomIndex]
-
     test_set = test_set + uptime_set
+    
     return (train_set, test_set)
 
 def getAccuracy(classifResults, test_data):
+    """
+        Display classifier results
+        > classifResults: the labels determined by classifier
+        > test_data: the actual labels
+    """
     truepos = 0
     falsepos = 0
     trueneg = 0
