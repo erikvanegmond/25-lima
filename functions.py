@@ -198,20 +198,20 @@ def groupTweets(writeToFile=False):
                     uptimeRanges = getUptimeRanges(downtimeRanges, downtimeData)
 
                     previousDowntimeRange = [pd.to_datetime(0),pd.to_datetime(0)]
-                    
+
                     # Find tweets that are in a period of downtime
                     for downtimeRange in downtimeRanges:
                         # Case of overlapping downtime ranges
                         if previousDowntimeRange[1] > downtimeRange[0]:
-                            if previousDowntimeRange[1] > downtimeRange[1]: 
+                            if previousDowntimeRange[1] > downtimeRange[1]:
                                 downtimeRange = [previousDowntimeRange[0],previousDowntimeRange[1]]
-                            else:   
-                                downtimeRange = [previousDowntimeRange[0],downtimeRange[1]]     
+                            else:
+                                downtimeRange = [previousDowntimeRange[0],downtimeRange[1]]
                         messageList = tweetDataToMessageList(tweetData[downtimeRange[0]:downtimeRange[1]])
                         for message in messageList:
                             if message not in uptimeTweets:
                                 downtimeTweets.append(message)
-                        previousDowntimeRange = downtimeRange        
+                        previousDowntimeRange = downtimeRange
 
                     # Find tweets that are in surrounding period (uptime)
                     for uptimeRange in uptimeRanges:
@@ -601,7 +601,7 @@ def classifier(inputFile, pickleLocation=None, classifier="naiveBayes", ratio=0.
     logging.info("splitting the dataset into train and test with a ratio of %.1f..." % (ratio))
     (trainset, testset) = splitDataSet(dataset, ratio)
 
-    logging.info("Getting the features from the data set...")
+    logging.info("Getting the features from the data set with n=%d..."%(n))
     featureList = getNgramsFromMessageList(n, messageList)
 
     logging.info("Creating train data...")
