@@ -195,12 +195,23 @@ def groupTweets(writeToFile=False):
                     downtimeRanges = getDowntimeRanges(downtimes, downtimeData)
                     uptimeRanges = getUptimeRanges(downtimeRanges, downtimeData)
 
+                    previousDowntimeRange = []
+                    
                     # Find tweets that are in a period of downtime
                     for downtimeRange in downtimeRanges:
+                        print "d0: " + str(downtimeRange[0])
+                        print "d1: " + str(downtimeRange[1])
+                        # Case of overlapping downtime ranges
+                        if previousDownTimeRange[1] > downtimeRange[0]:
+                            print "yes"
+                            downtimeRange[0] = previousDowntimeRange[0]
+                            print "d0: " + str(downtimeRange[0])
+                            print "d1: " + str(downtimeRange[1])
                         messageList = tweetDataToMessageList(tweetData[downtimeRange[0]:downtimeRange[1]])
                         for message in messageList:
                             if message not in uptimeTweets:
                                 downtimeTweets.append(message)
+                        previousDowntimeRange = downtimeRange        
 
                     # Find tweets that are in surrounding period (uptime)
                     for uptimeRange in uptimeRanges:
@@ -210,6 +221,8 @@ def groupTweets(writeToFile=False):
                             for message in messageList:
                                 if message not in uptimeTweets:
                                     uptimeTweets.append(message)
+                        else:
+                            print "no"
 
             except IndexError as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -278,6 +291,7 @@ def stripFeatures(writeToFile=False):
             for myFile in files:
                 inputFile = directory+'/'+myFile
                 text = open(inputFile).read()
+                # Assuming the JSON is correct, duplicate features will be joined
                 messageList = json.loads(text)
                 for i, message in enumerate(messageList):
                     message = extractFeatures(message)
