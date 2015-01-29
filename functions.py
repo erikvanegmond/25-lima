@@ -356,8 +356,8 @@ def relFreq(uptimeFile, downtimeFile, n=1):
         downtimeFile: the JSON file with all the downdtime tweets
         n: length of the n-gram sequence
     """
-    minCount = 1
-    print n
+    minCount = 10
+
     if not(os.path.exists(uptimeFile) and uptimeFile[-5:] ==".json"):
         logging.error("%s is not a valid json file!" % (uptimeFile))
         exit()
@@ -391,8 +391,12 @@ def relFreq(uptimeFile, downtimeFile, n=1):
             wordDict['relfreq'] = dfreq/ufreq if ufreq else -1
 
             relativeList.append((word, wordDict))
+
     relativeList = sorted(relativeList, key=lambda x: x[1]['relfreq'], reverse=True)
-    pp.pprint( relativeList[:100])
+    print "Relative frequency\t| Downtime frequency\t| Uptime frequency \t| Word"
+    for word in relativeList[:100]:
+        print "%f\t\t| %f\t\t| %f\t\t| %s" % (word[1]['relfreq'], word[1]['dfreq'], word[1]['ufreq'], word[0])
+
 
 def messageListToCSV(messageList, filename):
     """
@@ -556,6 +560,10 @@ def getAccuracy(classifResults, test_data):
             else:
                 falseneg += 1
     print "True positive: %d, False positive: %d, True negative: %d, False negative: %d" %(truepos, falsepos, trueneg, falseneg)
+    accuracy = (truepos + trueneg)/float(len(classifResults))
+    precision = float(truepos)/float(falsepos+truepos)
+    recall = float(truepos)/float(falseneg+truepos)
+    print "Accuracy: %f, Precision: %f, Recall: %f" % (accuracy, precision, recall)
 
 def naiveBayes(inputFile, datasetMethod=0, pickleLocation=None):
     inputFile = 'labeledData.json'
@@ -602,7 +610,7 @@ def demo(classifier):
     print "Classifier loaded!"
     while True:
         tweet = raw_input("Enter a tweet:\n")
-        print classif.classify(getFeaturesFromText(featureList, tweet))
+        print "Downtime" if classif.classify(getFeaturesFromText(featureList, tweet)) else "Uptime"
 
 
 

@@ -32,10 +32,8 @@ January, 2015 - University of Amsterdam
         getattr(self, args.command)()
 
     def prepare(self):
-        #fixFiles('Timelines-201408/201408%02d')
-        #stripFeatures(True)
-        #groupTweets(True)
-
+        fixFiles('Timelines-201408/201408%02d')
+        stripFeatures(True)
         (uptimeTweets, downtimeTweets)=groupTweets(True)
         print downtimeTweets[0]
 
@@ -74,6 +72,7 @@ January, 2015 - University of Amsterdam
 
     def subModule(self):
         parser = argparse.ArgumentParser(
+            prog="25-Lima Submodules",
             description='Run a 25-Lima submodule')
 
         parser.add_argument('-relfreq', "--relfreq", action='store_true', default=False,
@@ -91,12 +90,15 @@ January, 2015 - University of Amsterdam
         parser.add_argument('-csvToJson', '--csvToJson', help="file to convert to json")
         parser.add_argument('-naiveBayes', '--naiveBayes', help="Train naive bayes on a json file, add the json file as argument")
 
+
+
         if "--help" in sys.argv[3:] or "-h" in sys.argv[3:]:
             newArgs = filter(lambda a: a != '-h' and a != '--help', sys.argv[2:])
             args = parser.parse_args(newArgs)
+        elif '--relfreq' in sys.argv[2:]:
+            args = parser.parse_args(sys.argv[2:3])
         else:
             args = parser.parse_args(sys.argv[2:])
-
 
 
         if args.relfreq:
