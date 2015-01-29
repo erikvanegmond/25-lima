@@ -50,7 +50,7 @@ January, 2015 - University of Amsterdam
                     help='The file will be created in json format')
         parser.add_argument('--saveClassifier',
                     help='The classifier will be pickled in this file')
-        parser.add_argument('--classifier',
+        parser.add_argument('--classifier', choices=['naiveBayes', 'linearSVC', 'neighbors'],
                     help='The classifier will be used')
 
         args = parser.parse_args(sys.argv[2:])
