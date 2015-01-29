@@ -212,11 +212,12 @@ def groupTweets(writeToFile=False):
                                 downtimeTweets.append(message)
 
                     for uptimeRange in uptimeRanges:
-                        temp = tweetData[uptimeRange[0]:uptimeRange[1]]
-                        messageList = tweetDataToMessageList(tweetData[uptimeRange[0]:uptimeRange[1]])
-                        for message in messageList:
-                            if message not in uptimeTweets:
-                                uptimeTweets.append(message)
+                        if uptimeRange[0] < uptimeRange[1]:
+                            temp = tweetData[uptimeRange[0]:uptimeRange[1]]
+                            messageList = tweetDataToMessageList(tweetData[uptimeRange[0]:uptimeRange[1]])
+                            for message in messageList:
+                                if message not in uptimeTweets:
+                                    uptimeTweets.append(message)
 
             except IndexError as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
