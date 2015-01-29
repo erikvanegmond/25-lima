@@ -206,11 +206,13 @@ def groupTweets(writeToFile=False):
                             if previousDowntimeRange[1] > downtimeRange[1]: 
                                 downtimeRange = [previousDowntimeRange[0],previousDowntimeRange[1]]
                                 if j is not len(downtimeRanges)-1:
+                                    # Increase range and continue with new range
                                     previousDowntimeRange = downtimeRange
                                     continue
                             else:   
                                 downtimeRange = [previousDowntimeRange[0],downtimeRange[1]]  
                                 if j is not len(downtimeRanges)-1:
+                                    # Increase range and continue with new range
                                     previousDowntimeRange = downtimeRange
                                     continue                     
                         messageList = tweetDataToMessageList(tweetData[downtimeRange[0]:downtimeRange[1]])
@@ -228,6 +230,7 @@ def groupTweets(writeToFile=False):
                                 if message not in uptimeTweets:
                                     uptimeTweets.append(message)
                         else:
+                            # Skip because of overlap
                             continue
 
             except IndexError as e:
