@@ -50,14 +50,16 @@ January, 2015 - University of Amsterdam
                     help='The file will be created in json format')
         parser.add_argument('--saveClassifier',
                     help='The classifier will be pickled in this file')
+        parser.add_argument('--classifier',
+                    help='The classifier will be used')
 
         args = parser.parse_args(sys.argv[2:])
 
         csvToJson(args.input, args.output)
         if args.saveClassifier:
-            naiveBayes(args.output, 0, args.saveClassifier)
+            classifier(args.output, args.saveClassifier, args.classifier)
         else:
-            naiveBayes(args.output)
+            classifier(args.output)
 
     def demo(self):
         parser = argparse.ArgumentParser(
