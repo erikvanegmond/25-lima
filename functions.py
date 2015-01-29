@@ -200,13 +200,19 @@ def groupTweets(writeToFile=False):
                     previousDowntimeRange = [pd.to_datetime(0),pd.to_datetime(0)]
                     
                     # Find tweets that are in a period of downtime
-                    for downtimeRange in downtimeRanges:
+                    for j, downtimeRange in enumerate(downtimeRanges):                         
                         # Case of overlapping downtime ranges
                         if previousDowntimeRange[1] > downtimeRange[0]:
                             if previousDowntimeRange[1] > downtimeRange[1]: 
                                 downtimeRange = [previousDowntimeRange[0],previousDowntimeRange[1]]
+                                if j is not len(downtimeRanges)-1:
+                                    previousDowntimeRange = downtimeRange
+                                    continue
                             else:   
-                                downtimeRange = [previousDowntimeRange[0],downtimeRange[1]]     
+                                downtimeRange = [previousDowntimeRange[0],downtimeRange[1]]  
+                                if j is not len(downtimeRanges)-1:
+                                    previousDowntimeRange = downtimeRange
+                                    continue                     
                         messageList = tweetDataToMessageList(tweetData[downtimeRange[0]:downtimeRange[1]])
                         for message in messageList:
                             if message not in uptimeTweets:
