@@ -166,7 +166,7 @@ def groupTweets(writeToFile=False):
     uptimeTweets = []
 
     for site in siteList:
-        logging.info(site)
+        logging.info("Grouping tweets in %s" % (site))
         for i in range(1,32):
             downtimeData = None
             tweetData = None
@@ -187,11 +187,11 @@ def groupTweets(writeToFile=False):
                     downtimeData['timestamp'] = pd.to_datetime(downtimeData['timestamp'], dayfirst=True)
                     tweetData['created_at'] = pd.to_datetime(tweetData['created_at'], dayfirst=True)
                     tweetData.index = pd.to_datetime(tweetData.pop('created_at'))
-                    
+
                     # Pandas does not always properly handle Timestamp indices
                     if not tweetData.index.is_monotonic:
                         tweetData = tweetData.sort()
-                    
+
                     downtimes = downtimeData[downtimeData["IsDown"].isin([True])]['timestamp']
 
                     downtimeRanges = getDowntimeRanges(downtimes, downtimeData)
@@ -259,6 +259,7 @@ def fixFiles(directoryTemplate='Timelines-201408/201408%02d'):
             directory = directoryTemplate % (i)
             files = []
             os.chdir(directory)
+            logging.info("Fixing files in: %s" %(directory))
             try:
                 for file in glob.glob("*.csv"):
                     files.append(file)
@@ -294,6 +295,8 @@ def stripFeatures(writeToFile=False):
     for i in range(1,32):
         try:
             directory = 'Fixed/Timelines-201408/201408%02d' % (i)
+            logging.info("Stripping features in files in: %s" %(directory))
+
             for myFile in files:
                 inputFile = directory+'/'+myFile
                 text = open(inputFile).read()
@@ -365,7 +368,7 @@ def relFreq(uptimeFile, downtimeFile, n=1):
         > downtimeFile: the JSON file with all the downtime tweets
         > n: length of the n-gram sequence
     """
-    
+
     # [n=1] chosen minimal frequency to occur, when lower not interesting
     minCount = 10
 
@@ -533,7 +536,7 @@ def getFeaturesFromText(featureList, text):
 def splitDataSet(dataset, ratio):
     """
         Find features in text
-        > dataset: 
+        > dataset:
         > ratio:
     """
     downtime_set = [message for message in dataset if message['downtime']=='1']
@@ -559,7 +562,7 @@ def splitDataSet(dataset, ratio):
         train_set.append(uptime_set[randomIndex])
         del uptime_set[randomIndex]
     test_set = test_set + uptime_set
-    
+
     return (train_set, test_set)
 
 def getAccuracy(classifResults, test_data):
@@ -590,8 +593,7 @@ def getAccuracy(classifResults, test_data):
     recall = float(truepos)/float(falseneg+truepos) if float(falseneg+truepos) else -1
     print "Accuracy: %f, Precision: %f, Recall: %f" % (accuracy, precision, recall)
 
-def classifier(inputFile, pickleLocation=None, classifier="naiveBayes", datasetMethod=0):
-
+def classifier(inputFile, pickleLocation=None, classifier="naiveBayes", ratio=0.7, n=1, datasetMethod=0):
     text = open(inputFile).read()
     messageList = json.loads(text)
 
@@ -602,11 +604,11 @@ def classifier(inputFile, pickleLocation=None, classifier="naiveBayes", datasetM
     elif datasetMethod == 2:
         dataset = createRandomTrainSet(messageList)
 
-    logging.info("splitting the dataset into train and test...")
-    (trainset, testset) = splitDataSet(dataset, 0.7)
+    logging.info("splitting the dataset into train and test with a ratio of %.1f..." % (ratio))
+    (trainset, testset) = splitDataSet(dataset, ratio)
 
     logging.info("Getting the features from the data set...")
-    featureList = getNgramsFromMessageList(1, messageList)
+    featureList = getNgramsFromMessageList(n, messageList)
 
     logging.info("Creating train data...")
     train_data = createTrainData(trainset, featureList)
@@ -641,8 +643,9 @@ def demo(classifier):
     featureList = pickle.load(pkl_file)
     print "Classifier loaded!"
     while True:
-        tweet = raw_input("Enter a tweet:\n")
-        print "Downtime" if classif.classify(getFeaturesFromText(featureList, tweet)) else "Uptime"
+        tweet = raw_input("\nEnter a tweet:\n")
+        print "Downtime" if classif.classify(getFeaturesFromText(featureList, tweet))=="1" else "Uptime"
+
 
 
 

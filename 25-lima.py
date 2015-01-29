@@ -13,11 +13,11 @@ class Lima(object):
 prepare     prepares the data for classification, reads raw files, strips the features and groups the tweets
 train       Train a naive bayes classifier on a data file
 subModule   Run a subModule from 25-lima:
-    -relfreq
-    -fixFiles
-    -stripFeatures
-    -groupTweets
-    -csvToJson
+    --relfreq
+    --fixFiles
+    --stripFeatures
+    --groupTweets
+    --csvToJson
             """,
             epilog="""HAL24K data analysis - project Leren & Beslissen
 Timothy Dingeman, Erik van Egmond, Sebastiaan Hoekstra, Jos Wezenberg
@@ -52,6 +52,8 @@ January, 2015 - University of Amsterdam
                     help='The classifier will be pickled in this file')
         parser.add_argument('--classifier', default='naiveBayes', choices=['naiveBayes', 'linearSVC', 'neighbors'],
                     help='The classifier that will be used, default=naiveBayes')
+        parser.add_argument('--ratio', default=0.7, type=float,
+                    help='The ratio used for splitting the data set in a train and test set, default=0.7')
         parser.add_argument('--n', default=1, type=int,
                     help='The n used for ngram features, default n=1')
 
@@ -59,7 +61,8 @@ January, 2015 - University of Amsterdam
 
         csvToJson(args.input, args.output)
         if args.saveClassifier:
-            classifier(args.output, args.saveClassifier, args.classifier, args.n)
+            print args.ratio
+            classifier(args.output, args.saveClassifier, args.classifier, args.ratio, args.n)
         else:
             classifier(args.output)
 
