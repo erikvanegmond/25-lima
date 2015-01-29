@@ -197,21 +197,32 @@ def groupTweets(writeToFile=False):
                     downtimeRanges = getDowntimeRanges(downtimes, downtimeData)
                     uptimeRanges = getUptimeRanges(downtimeRanges, downtimeData)
 
+                    previousDowntimeRange = [pd.to_datetime(0),pd.to_datetime(0)]
+                    
                     # Find tweets that are in a period of downtime
                     for downtimeRange in downtimeRanges:
+                        # Case of overlapping downtime ranges
+                        if previousDowntimeRange[1] > downtimeRange[0]:
+                            if previousDowntimeRange[1] > downtimeRange[1]: 
+                                downtimeRange = [previousDowntimeRange[0],previousDowntimeRange[1]]
+                            else:   
+                                downtimeRange = [previousDowntimeRange[0],downtimeRange[1]]     
                         messageList = tweetDataToMessageList(tweetData[downtimeRange[0]:downtimeRange[1]])
                         for message in messageList:
                             if message not in uptimeTweets:
                                 downtimeTweets.append(message)
+                        previousDowntimeRange = downtimeRange        
 
                     # Find tweets that are in surrounding period (uptime)
                     for uptimeRange in uptimeRanges:
-                        if uptimeRange[0] < uptimeRange[1]: # if overlap
+                        if uptimeRange[0] < uptimeRange[1]:
                             temp = tweetData[uptimeRange[0]:uptimeRange[1]]
                             messageList = tweetDataToMessageList(tweetData[uptimeRange[0]:uptimeRange[1]])
                             for message in messageList:
                                 if message not in uptimeTweets:
                                     uptimeTweets.append(message)
+                        else:
+                            continue
 
             except IndexError as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -283,6 +294,7 @@ def stripFeatures(writeToFile=False):
             for myFile in files:
                 inputFile = directory+'/'+myFile
                 text = open(inputFile).read()
+                # Assuming the JSON is correct, duplicate features will be joined
                 messageList = json.loads(text)
                 for i, message in enumerate(messageList):
                     message = extractFeatures(message)
