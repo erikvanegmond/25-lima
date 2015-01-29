@@ -61,10 +61,10 @@ January, 2015 - University of Amsterdam
 
         csvToJson(args.input, args.output)
         if args.saveClassifier:
-            print args.ratio
             classifier(args.output, args.saveClassifier, args.classifier, args.ratio, args.n)
         else:
-            classifier(args.output)
+            save = "%s-%.1f-%d.pkl" % (args.classifier, args.ratio, args.n)
+            classifier(args.output, save, args.classifier, args.ratio, args.n)
 
     def demo(self):
         parser = argparse.ArgumentParser(
