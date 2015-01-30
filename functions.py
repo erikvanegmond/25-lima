@@ -122,6 +122,10 @@ def getNgramsFromString(n, string):
     ngrams=[]
     position = 0
     for i in range(0,len(words)-n+1):
+        # Also filter call to username
+        if "@" in words[position][0]:
+            words = words[1:]
+            continue
         ngrams.append(" ".join(words[position:position+n]))
         position+=1
     return ngrams
@@ -373,7 +377,7 @@ def relFreq(uptimeFile, downtimeFile, n=1):
     """
 
     # [n=1] chosen minimal frequency to occur, when lower not interesting
-    minCount = 10
+    minCount = 5
 
     if not(os.path.exists(uptimeFile) and uptimeFile[-5:] ==".json"):
         logging.error("%s is not a valid json file!" % (uptimeFile))
