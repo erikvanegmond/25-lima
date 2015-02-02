@@ -32,14 +32,18 @@ January, 2015 - University of Amsterdam
         getattr(self, args.command)()
 
     def prepare(self):
+        print "Fixing files in Timelines-201408..."
         fixFiles('Timelines-201408/201408%02d')
+        print "Stripping features..."
         stripFeatures(True)
+        print "Grouping tweets..."
         (uptimeTweets, downtimeTweets)=groupTweets(True)
-        print downtimeTweets[0]
 
         #waar komt csv in logger
         messageListToCSV(uptimeTweets,'uptime.csv')
         messageListToCSV(downtimeTweets,'downtime.csv')
+
+        print "Done!\n\nThe downtime tweets are saved in downtime.csv and the uptime tweets in uptime.csv.\nYou can now use a program like excel to label the tweets.\n\t-Add a column downtime to the data\n\t-Label downtime tweets with 1 and all other tweets with 0\n\t-Save your work as csv\n\nRun the program again to train on the labeled data.\n\t-25-lima.py train [<labeled-data.csv>] [<labeled-data-output.json>]\n\t-For more info: 25-lima.py train --help"
 
     def train(self):
         parser = argparse.ArgumentParser(

@@ -200,7 +200,7 @@ def groupTweets(writeToFile=False):
                     previousDowntimeRange = [pd.to_datetime(0),pd.to_datetime(0)]
 
                     # Find tweets that are in a period of downtime
-                    for j, downtimeRange in enumerate(downtimeRanges):                         
+                    for j, downtimeRange in enumerate(downtimeRanges):
                         # Case of overlapping downtime ranges
                         if previousDowntimeRange[1] > downtimeRange[0]:
                             if previousDowntimeRange[1] > downtimeRange[1]:
@@ -214,7 +214,7 @@ def groupTweets(writeToFile=False):
                                 if j is not len(downtimeRanges)-1:
                                     # Increase range and continue with new range
                                     previousDowntimeRange = downtimeRange
-                                    continue                     
+                                    continue
                         messageList = tweetDataToMessageList(tweetData[downtimeRange[0]:downtimeRange[1]])
                         for message in messageList:
                             if message not in uptimeTweets:
@@ -436,11 +436,13 @@ def messageListToCSV(messageList, filename):
             line = line.strip(",")+"\n"
             f.write(line.encode('ascii', 'ignore'))
 
-def csvToJson(csvFile, jsonFile = 'labeledData.json'):
+def csvToJson(csvFile, jsonFile = None):
     """
         Converts a CSV file to JSON, converts the time format, writes to disk and returns list tweets
         > csvFile = comma separated input file with header line of column names
     """
+    if jsonFile is None:
+        jsonFile = csvFile.split(".")[0]+".json"
     csvfile = open(csvFile, 'r')
     jsonfile = open(jsonFile, 'w')
 
