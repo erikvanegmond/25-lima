@@ -113,7 +113,7 @@ def tweetDataToMessageList(tweetData):
 
 def getNgramsFromString(n, string):
     '''
-        Returns n-grams of string in a list format
+        Returns n-grams of string in a list format, filtered from punctuation and @terms
         > n: the length of the n-gram sequence
         > string: sequence of natural language
     '''
@@ -122,7 +122,6 @@ def getNgramsFromString(n, string):
     ngrams=[]
     position = 0
     for i in range(0,len(words)-n+1):
-        # Also filter call to username
         if "@" in words[position][0]:
             words = words[1:]
             continue
@@ -378,6 +377,7 @@ def relFreq(uptimeFile, downtimeFile, n=1):
 
     # [n=1] chosen minimal frequency to occur, when lower not interesting
     minCount = 5
+    displayNr = 10
 
     if not(os.path.exists(uptimeFile) and uptimeFile[-5:] ==".json"):
         logging.error("%s is not a valid json file!" % (uptimeFile))
@@ -414,7 +414,7 @@ def relFreq(uptimeFile, downtimeFile, n=1):
 
     relativeList = sorted(relativeList, key=lambda x: x[1]['relfreq'], reverse=True)
     print "Relative frequency\t| Downtime frequency\t| Uptime frequency \t| Word"
-    for word in relativeList[:100]:
+    for word in relativeList[:displayNr]:
         print "%f\t\t| %f\t\t| %f\t\t| %s" % (word[1]['relfreq'], word[1]['dfreq'], word[1]['ufreq'], word[0])
 
 
