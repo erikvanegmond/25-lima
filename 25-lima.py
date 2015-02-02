@@ -99,7 +99,6 @@ January, 2015 - University of Amsterdam
                     dest='groupTweets',
                     help='Groups the tweets in two seperate sets, uptime and downtime. Writes to file in root folder. CAN TAKE A LONG TIME!')
         parser.add_argument('-csvToJson', '--csvToJson', help="file to convert to json")
-        parser.add_argument('-naiveBayes', '--naiveBayes', help="Train naive bayes on a json file, add the json file as argument")
 
 
 
@@ -134,8 +133,6 @@ January, 2015 - University of Amsterdam
             groupTweets(True)
         elif args.csvToJson:
             csvToJson(args.csvToJson)
-        elif args.naiveBayes:
-            naiveBayes(args.naiveBayes)
 
 
 
